@@ -1,0 +1,348 @@
+
+
+PYTHON :
+
+-] 	• .py extension - python file
+	• python codes runs from top to botttom
+   
+	(eg) : print("Hello World")
+
+-] 	Variables :
+	We use variables to temporarily store data in computer’s memory.
+	
+	(eg) :	price = 10
+			rating = 4.9
+			course_name = ‘Python for Beginners’
+			is_published = True
+			print(price,rating,course_name,is_published)
+			
+	In the above example,
+	• price is an integer (a whole number without a decimal point)
+	• rating is a float (a number with a decimal point)
+	• course_name is a string (a sequence of characters)
+	• is_published is a boolean. Boolean values can be True or False.
+	
+	• In Python we dont need to give data_type.
+	• No %d, $ and stuffs, just give variable without quotes for printing it.
+	• And Python is Case-sensitive, If we give true instead of True, It considers the value as string instead of Boolean.
+	• variable name rule applies here asweel.
+	
+	(exe) : name = 'Jhon Smith'
+			age = 20
+			Patient_status = 'New patient'
+			print(f"{name} of age {age} is checked in as a {Patient_status}")
+
+	(exe) : name=input("What is your name ? ")
+			colour=input("What's ypur favourite colour ? ")
+			print(name + ' likes ' + colour)
+			
+-] 	Comments :
+	We use comments to add notes to our code. Good comments explain the hows and whys, not what the code does.
+	That should be reflected in the code itself. Use comments to add reminders to yourself or other developers, or also explain your assumptions
+	and the reasons you’ve written code in a certain way.
+
+	(exe) :	# This is a comment and it won’t get executed.
+			# Our comments can be multiple lines.
+
+-] 	Type convertion :
+	• We can receive input from the user by calling the input() function. 
+	(exe) : birth_year = int(input(‘Birth year: ‘))
+	  The input() function always returns data as a string. So, we’re converting the result into an integer by calling the built-in int() function.
+	• type() function is used to tell us what data_type the given variable is.
+
+	(exe) : birth_year = input('Enter your Birth year : ')
+			print(type(birth_year))
+			age=2024-int(birth_year)
+			print(type(age))
+			print(f"Your age is {age}")
+			
+	(exe) :	weight = input("Please enter your weight (In pounds) : ")
+			weight_in_kilograms = int(weight) * 0.45359237
+			print(f"Your weight in kilograms is : {weight_in_kilograms}")
+			
+-] 	Strings :
+	• We can define strings using single (‘ ‘) or double (“ “) quotes.
+	• " '' " or ' "" ' , depending on the requirments, Priorities can change.
+	• To define a multi-line string, we surround our string with tripe quotes (“””).
+	• We can get individual characters in a string using square brackets [].
+	
+	(exe) :	course = ‘Python for Beginners’
+			print(course[0]) # returns the first character
+			print(course[1]) # returns the second character
+			print(course[-1]) # returns the first character from the end
+			print(course[-2]) # returns the second character from the end
+			
+	• We can slice a string using a similar notation: course[1:5]
+	  The above expression returns all the characters starting from the index position of 1 to 5 (but excluding 5). The result will be ytho
+	  If we leave out the start index, 0 will be assumed.
+	  If we leave out the end index, the length of the string will be assumed.
+	  
+	(exe) : name='Jennifer'
+			print(name[1:-1])
+			-> ennife
+	 
+	• We can use formatted strings to dynamically insert values into our strings:
+	(exe) : name = ‘Mosh’
+			message = f’Hi, my name is {name}’
+			
+	• 	
+	message.upper() # to convert to uppercase
+	message.lower() # to convert to lowercase
+	message.title() # to capitalize the first letter of every word
+	message.find(‘p’) # returns the index of the first occurrence of p
+	 (or -1 if not found)
+	message.replace(‘p’, ‘q’)
+
+	To check if a string contains a character (or a sequence of characters), we use the in
+	operator:
+	contains = ‘Python’ in course
+
+
+
+
+------------------------
+
+
+-] Nested loops :
+	
+	(exe) :	for x in range(4):
+				for y in range(4):
+					print(f"({x},{y})")
+	
+	
+	(exe) : numbers = [5, 2, 5, 2, 2]
+			for x in numbers:
+				#print(x*'*')
+				z=''
+				for y in range(x):
+					z += 'x'
+				print(z)
+				
+	-> xxxxx
+	   xx
+	   xxxxx
+	   xx
+	   xx
+	   
+-] Lists :
+	Its basically an Array.
+
+	•	numbers = [1, 2, 3, 4, 5]
+		numbers[0] # returns the first item
+		numbers[1] # returns the second item
+		numbers[-1] # returns the first item from the end
+		numbers[-2] # returns the second item from the end
+		
+(exe) :	numbers = [3, 5, 7, 9, 11, 13, 15]
+		max = numbers[0]
+		for x in numbers:						-->{we use x(can use any) in numbers inorder to print or read each elements in numbers(list)}
+			#print(x)
+			if x > max:
+				max = x
+		print(max)
+		
+	• 2D Lists :
+		It's basically an List within an List.
+	
+(exe) : matrix = [
+			[1, 2, 3],
+			[4, 5, 6],
+			[7, 8, 9]
+		]
+		for row in matrix:
+			for item in row:
+				print(item)
+	
+	•	numbers.append(6) # adds 6 to the end
+		numbers.insert(0, 6) # adds 6 at index position of 0
+		numbers.remove(6) # removes 6
+		numbers.pop() # removes the last item
+		numbers.clear() # removes all the items
+		numbers.index(8) # returns the index of first occurrence of 8
+		numbers.sort() # sorts the list
+		numbers.reverse() # reverses the list
+		numbers.copy() # returns a copy of the list
+		
+(exe) :	numbers = [2, 2, 4, 6, 3, 4, 6, 1]
+		uniques = []
+		for num in numbers:
+			if number not in uniques:
+				uniques.append(num)
+		print(uniques)
+		
+		-> [2, 4, 6, 3, 1]
+		
+-] Tuples :
+	They are like read-only lists. We use them to store a list of items. "But once we define a tuple, we cannot add or remove items or
+	change the existing items".
+	
+	(eg) : coordinates = (1, 2, 3)
+	We can unpack a list or a tuple into separate variables:
+	x, y, z = coordinates
+	
+-] Unpacking :
+	We can assign multiple values in a single go.
+	
+(eg) : 	x, y, z = [3, 5, 7]
+		print(z)
+		
+		-> 7
+		
+-] Dictionaries :
+	We use dictionaries to store key/value pairs. We can use strings or numbers to define keys. They should be unique.
+	We can use any types for the values.
+	
+(eg) :	customer = {
+		“name”: “John Smith”,
+		“age”: 30,
+		“is_verified”: True
+		}
+		
+	•	customer[“name”]                    # returns “John Smith”
+		customer[“type”]                    # throws an error
+		customer.get(“type”, “silver”)      # returns “silver”
+		customer[“name”] = “new name”       # By this we can alter the name's value or add new key/value pair
+
+-] Functions :
+	We use functions to break up our code into small chunks. These chunks are easier to read, understand and maintain.
+If there are bugs, it’s easier to find bugs in a small chunk than the entire program. We can also re-use these chunks.
+NOTE : Python runs from top to bottom, Hence we need to define function 1st, then call it. Other way around doesn't work.
+
+(eg) :	def greet_user(name):
+			print(f”Hi {name}”)
+			
+		greet_user(“John”)
+		
+-] Parameters / Arguments:
+	Parameters	are placeholders for the data we can pass to functions. Arguments are the actual values we pass.
+If an Parameter (placeholder) is defined for a function but Argument (value) was not passed it throws error.
+Parameters and Arguments acts similar to Variables and its values, But in function def & call level.	
+We have two types of arguments:
+• Positional arguments : their position (order) matters
+• Keyword arguments : position doesn’t matter - we prefix them with the parameter name.
+
+(eg) : 	greet_user(“John”, “Smith”)       					# Two positional arguments
+(eg) : 	calculate_total(order=50, shipping=5, tax=0.1)   	# Keyword arguments
+
+	•	When we mix positional arguments and keyword arguments, we need to write positional argument 1st, then keyword arguments.
+	•	Our functions can return values. """If we don’t use the return statement, by default None is returned""".
+		None is an object that represents the absence of a value.
+		
+(eg) :		def square(number):
+				return number * number
+			result = square(2)
+			print(result) 							# prints 4
+			
+-] Exceptions :
+	Exceptions are errors that crash our programs. They often happen because of bad input or programming errors. It’s our job to anticipate and
+handle these exceptions to prevent our programs from cashing.
+
+(eg) :	try:
+			age = int(input(‘Age: ‘))
+			income = 20000
+			risk = income / age
+			print(age)
+		except ValueError:
+			print(‘Not a valid number’)
+		except ZeroDivisionError:
+			print(‘Age cannot be 0’)
+
+-] Comments :
+	# - Is used for comments
+	
+-} Classes & Constructor :
+	We use classes to define new types ().When a function is part of a class, we refer to it as a method.
+Classes define templates or blueprints for creating objects. An object is an instance of a class. Every time we create a new instance, that instance
+follows the structure we define using the class.
+
+__init__ is a special method called constructor. It gets called at the time of creating new objects. We use it to initialize our objects. 
+
+(eg) : pscal naming conv diff fr class
+(eg) : 	class Point:						#class name starts with Capital letter (It can also be used to distinguish between letters)
+			def __init__(self, x, y):		 ulike variable name which starts with small lettter (uses _ to distinguish between letters)
+				self.x = x
+				self.y = y					#Here, self represents the assigned object.
+			def move(self):
+				print(“move”)
+				
+point1 = Point()							#In C++ we use class name as data_type and define object, likewise in python we need to define
+point1.move									 a object by assigning it to class (in the form of function)
+point1.x = 10
+point1.y = 20
+print(point1.x)								
+
+-> 	move
+	10
+	20
+
+point2 = Point(10, 5)						#Each object is different instance of a class
+point3 = Point(2, 4)
+
+NOTE : Better to watch video once.
+
+-} Inheritance :
+	Inheritance is a technique to remove code duplication. We can create a base class to define the common methods and then have other classes
+inherit these methods.
+
+class Mammal:
+	def walk(self):
+		print(“walk”)
+class Dog(Mammal):			# by giving Mammal in () Dog class inheriting Mammal's methods
+	def bark(self):
+		print(“bark”)
+class Cat(Mammal):
+	pass					# pass is to tell that we dont define any other method here, pass on
+dog = Dog()
+dog.walk() 					# inherited from Mammal
+dog.bark() 					# defined in Dog
+
+-] Modules :
+	A module is a file with some Python code. We use modules to break up our program into multiple files. This way, our code will be 
+better organized. We won’t have one gigantic file with a million lines of code in it!
+There are 2 ways to import modules: we can import the entire module, or specific objects in a module.
+
+	• importing the entire converters module :	
+(eg) : 	import converters
+		converters.kg_to_lbs(5)
+	• importing one function in the converters module :
+(eg) :	from converters import kg_to_lbs
+		kg_to_lbs(5)
+
+-] Packages :
+	A package is a directory with __init__.py in it. It can contain one or more modules.
+	
+	• importing the entire sales module :
+(eg) : 	from ecommerce import sales						#here, ecommerce is Package
+		sales.calc_shipping()
+	• importing one function in the sales module :
+(eg) :	from ecommerce.sales import calc_shipping
+		calc_shipping()
+
+-] Python Standard Library :
+	Python comes with a huge library of modules for performing common tasks such as sending emails, working with date/time,
+generating random values, etc.
+
+Random Module :
+import random
+random.random() # returns a float between 0 to 1
+random.randint(1, 6) # returns an int between 1 to 6
+members = [‘John’, ‘Bob’, ‘Mary’]
+leader = random.choice(members) # randomly picks an item
+
+-] Pypi :
+	Python Package Index (pypi.org) is a directory of Python packages published by Python developers around the world. We use pip to install
+or uninstall these packages.
+
+pip install openpyxl
+pip uninstall openpyxl
+
+
+------------------------------------
+
+Hacker rank :
+
+problem - 2 :
+
+Use 2 <= n <= 5 to check if a value falls within a range.
+Use range(2, 5) to create a sequence of numbers within a range (excluding the upper bound).
+
