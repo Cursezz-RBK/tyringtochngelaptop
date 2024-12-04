@@ -1,0 +1,199 @@
+
+LINUX :
+-----
+
+Monitoring :
+----------
+
+*] top -> It is a powerful Real-time System Monitor tool in Linux and Unix-like systems that displays real-time information about system process.    
+          It provides a dynamic view of CPU usage, memory consumption, and process activity.
+
+*] atop -> Same as top command with additional info's.
+
+*] htop -> Same as top command with more visually interactive way.
+
+*] free -> It is a command is a simple yet powerful tool used to display information about system memory usage.
+
+*] mpstat -> It is a command-line tool used to monitor system performance, specifically focusing on CPU and I/O statistics
+
+*] logwatch -> It is a Comprehensive Log Monitoring Tool, Which is designed to monitor system logs and generate comprehensive reports.
+               It automates the process of analyzing log files, making it easier to identify potential security threats, system errors,
+			   and performance issues
+
+Storage :
+-------
+
+*] df -h (disk free) -> This command used to display information about file system disk space usage, such as Total disk space, Used space,
+                        Available space, Usage percentage
+						
+   Cmd Options -> -h: Human-readable format
+                  -a: Include all file systems, including those with zero-sized blocks
+                  -i: Display inode usage instead of block usage
+                  -k: Display size in kilobytes
+                  -m: Display size in megabytes
+                  -t: Specify a file system type
+				  
+{{{{{ NOTE : Disk (Physical stroage unit ) is divided into no of Partition (Sub-division of disk),
+            Within a partition inorder to store & install some application we need file system (It's more like a layer within partition for storage),
+            A partition can have only one file system, The file system is later divided into directories for file storage
+            Connecting a file system with another file system is done through a directory (which act like a bridge),
+			The process of this connection is called mounting and that directory is called mount point }}}}}
+  
+*] du -h /dir/.. (disk usage) -> It is used to estimate and report the amount of disk space used by files and directories.
+
+*] mount /dev/sdb1 /mnt/usb -> Where, /dev/sdb1 is File system & /mnt/usb is the directory in which it gets mounted.
+
+*] umount <mount_point> -> Unmounting a file system disconnects it from the file system hierarchy, making it inaccessible.
+
+Network :
+-------
+
+{{{{{ A network interface is the point of connection between a computer and a network,
+      Once an connection is established to network an Ip address is assigned to the device, so that we can identify a device's location and
+	  network interface for transmission. A port is an endpoint of an application or a process within a device,
+	  which is connected to network interface and then to Internet, By using different port multiple applications of same device can connect internet.
+	  Port and Ip address combindly known as Socket.
+	  A network connection refers to the established link between two devices that allows data transfer, This connection utilizes both
+	  the IP address and port number to route data correctly. }}}}}
+	  
+*] iptables -L -> It is a Powerful Firewall Tool, used to configure the Linux kernel firewall, known as Netfilter. It allows you to define rules
+                  for how network packets are handled, providing control over incoming and outgoing traffic at kernal level.
+
+*] ufw -> Also known as Uncomplicated Firewall, It is a user-friendly firewall configuration tool for Linux systems,
+       designed to simplify the complex task of managing iptables rules.
+
+*] ping <ip_address> -> It is a Network diagnostic tool, used to test the reachability of a host on an Internet Protocol (IP) network.
+
+*] ifconfig -> Also known as Interface configuration is used to configure and manage network interfaces.
+               It allows users to view and modify network settings, including assigning IP addresses, enabling or disabling interfaces,
+			   and displaying network configuration information.
+			   
+*] route -> This command is a powerful tool used to manage routing tables in Linux systems. It allows you to view, add, and delete routes,
+            which determine how packets are forwarded to their destinations.
+			
+*] traceroute <IP> -> traceroute is a network diagnostic tool that traces the route a packet takes from your computer to a destination host.
+
+*] ip -> The ip command is designed to handle various networking tasks, including configuring network interfaces, managing IP addresses,
+         and manipulating routing tables. It allows system administrators to view and modify network settings in real-time without
+		 needing to reboot the system.
+	  -> Usage - "ip addr show"	 
+
+{{{{{ ifconfig is old tool for network configuration & ip is new tool for network configuration }}}}}				   
+
+*] netstat -> Also known as Network statistics is a Network Tool for Monitoring Connections.
+              It is primarily used to view incoming and outgoing network connections, check listening ports, and gather statistics
+			  about the network interfaces.
+		   -> Usage - "netstat -tuln" -> lists TCP/UDP connections along with their listening ports and associated IP addresses.
+
+User admin :
+----------
+
+*] useradd <username> -> It is a command to create new users
+
+*] passwd <username> -> Setting or changing password of a user
+
+*] chown www-data:www-data /app -> It is used to change ownership of a file/directories
+
+*] chmod <mode> <file_or_directory> -> The chmod command is used to change the permissions of files and directories in Unix-like systems.
+                                    -> Read : 4
+									   Write : 2
+                                       Execute : 1
+									   
+*] ps -> Also known as process status, Displays the running process status.
+
+*] ps aux -> Lists all running process with their status, PID, memory usage, CPU usage
+
+*] kill -9 <PID> -> used to kill a process forcefully
+
+*] awk -> It is Powerful Text Processing Tool, It's particularly useful for extracting, manipulating, and transforming data from text files.
+       -> usage : awk 'pattern { action }' input_file
+	   -> eg : awk -F'/ERROR/' '{ print $2 }' input.csv
+	   
+*] Removing duplicate files in Linux :
+   -> fdupes -> It is a command-line tool specifically designed to find duplicate files
+   -> Using "rm" with "find" and "xargs"
+	   
+*] sed -> It is a powerful command-line text processing tool used to manipulate text streams. It's often employed for tasks like searching and
+          replacing text, deleting lines, and transforming text formats.	   
+	   
+*] grep -> It is a Powerful Text Search Tool, It is used to search for patterns within text files.
+        -> grep -rni "error" *
+
+*] find -> It is a Powerful File Search Tool, used to search for files and directories within a specified directory hierarchy.
+
+*] Hard link -> A hard link is essentially a second name for an existing file. It points directly to the same inode
+               (data structure that describes a file) as the original file.
+			 -> Usage - "ln original_file hard_link"  
+   Soft link -> A soft link, also known as a symbolic link or symlink, is a file that points to another file or directory.
+                It's like a shortcut on Windows
+             -> Usage - "ln -s original_file soft_link"
+
+*] ulimit -> It is used to set or display resource limits for the current user. These limits control the amount of system resources,
+             such as memory, CPU time, and file descriptors, that a process can consume.\
+          -> Usage - "ulimit -a"
+		  
+*] strace -> It is a debugging and diagnostic tool used to trace system calls and signals that a process makes and receives.		  
+		  
+*] sed -> It is a powerful command-line text processing tool used to manipulate text streams. It's often employed for tasks like searching and
+          replacing text, deleting lines, and transforming text formats.
+		  
+*] which -> The which command in Linux is a simple yet powerful tool used to locate the full path to an executable file.
+            It searches through the directories listed in the PATH environment variable to find the specified command.		  
+			
+Concepts :
+--------
+
+*] Log directories ->		  
+	/var/log: This is the primary directory for system logs.
+	/var/log/messages: General system messages.
+	/var/log/syslog: System messages (older systems).
+	/var/log/secure: Security-related logs (e.g., SSH, sudo).
+	/var/log/cron.log: Cron job logs.
+	/var/log/apache2: Apache web server logs.
+	/var/log/nginx: Nginx web server logs.
+	/var/log/samba: Samba file server logs.
+	/var/log/mysql: MySQL database server logs.
+	
+*] File system ->
+	/ : root directory
+	/bin: Contains essential binary executables for all users.   
+	/boot: Contains boot loader files and kernel images.   
+	/dev: Contains device files representing hardware devices.   
+	/etc: Contains system configuration files.   
+	/home: Contains user home directories. 
+	/var: Variable files, including log files and spool directories.  
+	/lib: Contains shared libraries.   
+	/mnt: Mount point for temporary file systems.   
+	/opt: Optional software packages.   
+	/root: Root user's home directory.   
+	/sbin: Contains essential system binaries, typically used by root.   
+	/tmp: Temporary files.   
+	/usr: Contains user programs and libraries.
+	/var: Variable files, including log files and spool directories.   
+
+*] yum -> Used in Red Hat-based distributions like RHEL, CentOS, and Fedora.
+   apt -> Used in Debian-based distributions like Ubuntu and Debian
+   rpm -> Used in RPM-based distributions
+   
+*] Options to Log into a Server When SSH Fails :
+   -> IPMI (Intelligent Platform Management Interface) -> This interface provides remote management capabilities, including remote console access
+      and power control.
+	  -> ILOM (Intelligent Platform Management Interface) is a hardware-based management interface found in many server-class systems,
+	     especially those from HP. It provides remote management capabilities, allowing administrators to monitor, configure, and
+		 control server hardware remotely.
+   -> SSH Tunneling - Use SSH to create a secure tunnel for other protocols like HTTP or RDP.
+   -> RDP (Remote Desktop Protocol)
+   -> Direct Console Access  
+
+*] Upgrading a Linux system without internet access requires a different approach. Traditional package managers like apt, yum, or dnf rely on
+   online repositories to download and install updates.
+   -> Linux repo mount, then upgrade.
+   -> Offline Repository -> 
+	  Download Packages : Use a system with internet access to download the required packages and their dependencies.
+      Transfer Packages : Transfer the downloaded packages to the offline system using a USB drive, network share, or other methods.   
+      Create a Local Repository : Create a local repository on the offline system and add the downloaded packages to it.
+      Install Packages : Use the package manager to install packages from the local repository.
+	  
+*] Brute force attack ->	  
+
+*] Disk Increase ->
