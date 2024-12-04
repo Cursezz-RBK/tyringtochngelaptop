@@ -1,0 +1,151 @@
+
+
+PYTHON :
+
+-] 	• .py extension - python file
+	• python codes runs from top to botttom
+   
+	(eg) : print("Hello World")
+
+-] 	Variables :
+	We use variables to temporarily store data in computer’s memory.
+	
+	(eg) :	price = 10
+			rating = 4.9
+			course_name = ‘Python for Beginners’
+			is_published = True
+			print(price,rating,course_name,is_published)
+			
+	In the above example,
+	• price is an integer (a whole number without a decimal point)
+	• rating is a float (a number with a decimal point)
+	• course_name is a string (a sequence of characters)
+	• is_published is a boolean. Boolean values can be True or False.
+	
+	• In Python we dont need to give data_type.
+	• No %d, $ and stuffs, just give variable without quotes for printing it.
+	• And Python is Case-sensitive, If we give true instead of True, It considers the value as string instead of Boolean.
+	• variable name rule applies here asweel.
+	
+	(exe) : name = 'Jhon Smith'
+			age = 20
+			Patient_status = 'New patient'
+			print(f"{name} of age {age} is checked in as a {Patient_status}")
+
+	(exe) : name=input("What is your name ? ")
+			colour=input("What's ypur favourite colour ? ")
+			print(name + ' likes ' + colour)
+			
+-] 	Comments :
+	We use comments to add notes to our code. Good comments explain the hows and whys, not what the code does. That should be reflected in the code itself.
+	Use comments to add reminders to yourself or other developers, or also explain your assumptions and the reasons you’ve written code in a certain way.
+
+	(exe) :	# This is a comment and it won’t get executed.
+			# Our comments can be multiple lines.
+
+-] 	Type convertion :
+	• We can receive input from the user by calling the input() function. 
+	(exe) : birth_year = int(input(‘Birth year: ‘))
+	  The input() function always returns data as a string. So, we’re converting the result into an integer by calling the built-in int() function.
+	• type() function is used to tell us what data_type the given variable is.
+
+	(exe) : birth_year = input('Enter your Birth year : ')
+			print(type(birth_year))
+			age=2024-int(birth_year)
+			print(type(age))
+			print(f"Your age is {age}")
+			
+	(exe) :	weight = input("Please enter your weight (In pounds) : ")
+			weight_in_kilograms = int(weight) * 0.45359237
+			print(f"Your weight in kilograms is : {weight_in_kilograms}")
+			
+-] 	Strings :
+	• We can define strings using single (‘ ‘) or double (“ “) quotes.
+	• " '' " or ' "" ' , depending on the requirments, Priorities can change.
+	• To define a multi-line string, we surround our string with tripe quotes (“””).
+	• We can get individual characters in a string using square brackets [].
+	
+	(exe) :	course = ‘Python for Beginners’
+			print(course[0]) # returns the first character
+			print(course[1]) # returns the second character
+			print(course[-1]) # returns the first character from the end
+			print(course[-2]) # returns the second character from the end
+			
+	• We can slice a string using a similar notation: course[1:5]
+	  The above expression returns all the characters starting from the index position of 1 to 5 (but excluding 5). The result will be ytho
+	  If we leave out the start index, 0 will be assumed.
+	  If we leave out the end index, the length of the string will be assumed.
+	  
+	(exe) : name='Jennifer'
+			print(name[1:-1])
+			-> ennife
+	 
+	• We can use formatted strings to dynamically insert values into our strings:
+	(exe) : name = ‘Mosh’
+			message = f’Hi, my name is {name}’
+			
+	• 	
+	message.upper() # to convert to uppercase
+	message.lower() # to convert to lowercase
+	message.title() # to capitalize the first letter of every word
+	message.find(‘p’) # returns the index of the first occurrence of p
+	 (or -1 if not found)
+	message.replace(‘p’, ‘q’)
+
+	To check if a string contains a character (or a sequence of characters), we use the in
+	operator:
+	contains = ‘Python’ in course
+
+
+
+
+------------------------
+
+
+-] Nested loops :
+	
+	(exe) :	for x in range(4):
+				for y in range(4):
+					print(f"({x},{y})")
+	
+	
+	(exe) : numbers = [5, 2, 5, 2, 2]
+			for x in numbers:
+				#print(x*'*')
+				z=''
+				for y in range(x):
+					z += 'x'
+				print(z)
+				
+	-> xxxxx
+	   xx
+	   xxxxx
+	   xx
+	   xx
+	   
+-] Lists :
+
+	•	numbers = [1, 2, 3, 4, 5]
+		numbers[0] # returns the first item
+		numbers[1] # returns the second item
+		numbers[-1] # returns the first item from the end
+		numbers[-2] # returns the second item from the end
+	
+	•	numbers.append(6) # adds 6 to the end
+		numbers.insert(0, 6) # adds 6 at index position of 0
+		numbers.remove(6) # removes 6
+		numbers.pop() # removes the last item
+		numbers.clear() # removes all the items
+		numbers.index(8) # returns the index of first occurrence of 8
+		numbers.sort() # sorts the list
+		numbers.reverse() # reverses the list
+		numbers.copy() # returns a copy of the list
+		
+------------------------------------
+
+Hacker rank :
+
+problem - 2 :
+
+Use 2 <= n <= 5 to check if a value falls within a range.
+Use range(2, 5) to create a sequence of numbers within a range (excluding the upper bound).
