@@ -1,0 +1,60 @@
+DOCKER :
+------
+It is a tool used to create, deploy, and run applications easily by using containers.
+
+
+PROBLEMS SOLVED BY DOCKER :
+-------------------------
+1]	Portability & Time consuming -
+	Docker containers package all the necessary dependencies, libraries, and configurations,
+	ensuring the application will run the same way across different environments, from development to production.
+	This eliminates the "works on my machine" problem.
+2]	Speed and efficiency -
+	Docker containers start up and run much faster than traditional virtual machines, as they don't require booting up a full operating system.
+	This makes Docker ideal for rapid development and deployment. 
+3]	Resource utilization -
+	Docker containers are more lightweight and use fewer system resources compared to VMs, as they share the host operating system kernel.
+	This allows for better hardware utilization and cost savings.
+4]	Security -
+	Docker provides a secure software supply chain by isolating applications in their own containers, reducing the attack surface and
+	potential for conflicts between applications.
+	
+
+DOCKER ARCHITECTURE :
+-------------------
+It contains = Docker engine -> Client - Server
+Docker Server -> Docker Daemon which is an long running process responsible for creation, and maintaing of Docker Images, Volumes, Containers, etc,.
+Docker Registry -> Where we store Imgaes. It has public repositories like Docker Hub, And Private repositories like AWS ECR, Azure registry.
+Docker Client -> It contains CLI where we can communicate, and Restful API which interacts with Docker Daemon (Docker Server)
+				 to instruct for performing actions.
+
+
+DOCKER FLOW :
+-----------
+CLI (Docker Client) -> API (Docker Client) -> Daemon (Docker Server) -> Registry
+
+
+DOCKER IMAGES :
+-------------
+Image is a bundle which contains the application along with it's required dependencies.
+When this image is runned, It creates container ( which is an isolated environment ) where our applications can run.
+We can compare the Images and Containers to Class and Objects. A Class is a blueprint which holds the informations to create an object.
+And we can create no of similar objects with same class. In same way, Images contains the instructions to create a Docker container.
+We can create any no of containers with same images. Docker Images are sharable through container registries like Docker hub, AWS ECR, etc,.
+
+" Image is a lightweight, standalone, executable package of software that includes everthing  needed to run an application.
+It contains code, runtime, system tools, system libraries and settings ".
+
+
+DOCKER vs VM :
+------------
+
+
+DOCKER COMMANDS :
+---------------
+docker pull nginx
+docker pull nginx:1.20
+docker images
+
+
+
