@@ -1,0 +1,914 @@
+
+KUBERNETES :
+----------
+Kubernetes is an open source system for automating deployment, scaling, and management of containerized applications.
+A system which manages or orchestrates containers are called orchestration tool. Kubernetes is one of them which was open sourced by Google in 2014
+and maintained by CNCF.
+Kubernetes in greek is known as Helmsman (which represents ship controlling wheel(K8's symbol)). K8s -> 8 letters between K and s of Kubernetes.
+
+{{ NOTE - Node here is Laptop (physical machine) and EC2 (VM's) }}
+
+
+PROBLEMS SOLVED BY KUBERNETES -> FEATURES INVOLVED :
+--------------------------------------------------
+1]	When an Containerized application goes down or an Node goes down, Kubernetes monitor's each node, identifies and brings up the unhealthy ones.
+	-> Monitoring
+	-> Self-Healing
+	-> High Availability
+
+2] 	Handling sudden increase in workloads
+	-> Load Balancing
+	-> Auto Scaling
+	-> Automatic bin packing
+	
+3] 	Releasing updates multiple time causes downtime of the container's.
+	-> Rolling and Canary Deployments
+	-> Automatic Rollout and Rollback
+	
+4] 	Secret and Configuration management
+
+
+ALTERNATIVE TO KUBERNETES :
+-------------------------
+Docker Swarm
+Mesos
+AWS ECS, EKS
+
+
+KUBERNETES ARCHITECTURE :
+-----------------------
+{{NOTE - Pods are created by Control manager & They are managed by Kubelet}}
+
+1]	CLUSTER :
+	-------
+	In Kubernetes (K8s), a cluster refers to a group of machines (physical or virtual) that work together to run containerized applications.
+	These machines are connected and managed by the Kubernetes control plane, which ensures that the desired state of the cluster is maintained.
+	The cluster is the core of Kubernetes and allows for efficient and scalable deployment of containerized applications across multiple machines.
+	
+	Basically, We have multiple worker nodes (each node is an VM or EC2). Multi worker node forms Worker plan, These multi worker nodes are
+	controlled by Control plan (Master node), Both Control and Worker plan forms a Cluster.
+	
+2]	MASTER NODE COMPONENTS :
+	----------------------
+	Control plan will be in constant contact with the worker node to make sure cluster is running with all the configuration.
+	Where as, Worker node is responsible for managing the application within pod.
+
+	a] KUBE API-SERVER :
+		It is an Control plane component which exposes Kubernetes API, through which we end user use CLI or SDK to communicate (shedule pod,etc)
+		with K8s. So, It is called as the front-end of K8s.
+		
+	b] ETCD :
+		It is an simple key-value storage which is used to store cluster data (no of nodes, pods, containers and their state, etc,..)
+		It is always recommended to have backup plan for etcd so we can restore during emergencies.
+		For security reasons only Api-server can access ETCD, not other components can interact directly.
+		It has an important feature called Watch-API, which monitor's the key's (resources) and updates any changes to Client through Api-server.
+		
+	c] SCHEDULAR :
+		It helps to schedule pods in various nodes based on resource utilization (Hardware constraints (Memory, CPU), Software constraints).
+		Once an node is selected for pod scheduling it then calls Api-server.
+		
+	d] KUBE CONTROL MANAGER :
+		If any changes in configurations occurs (eg: Replacing of Images in which pods are running or changing parameters in configuration YAML file, etc)
+		The Controller spots the changes and works on desired changes. Different types of Controller :
+			a] Replication Controller - Ensures the desired no of pods are running.
+			b] Node Controller - Monitor's the health of Node and reports to Cluster (When Node comes online or goes unresponsive)
+			c] Endpoint Controller, etc - It connects the pods and services to populate the end points. And responsible for managing the Endpoints.
+		
+3]	WORKER NODE COMPONENTS :
+	----------------------
+	a] CONTAINER-RUNTIME :
+		In order to run an container from an image we need Container-Runtime. Docker, ContainerD, Raket are some examples.
+		But Docker is the most common one.
+	g	
+	b] KUBELET :
+		It is an agent which runs in every worker node. It ensures that containers are running within the pods.
+		It is also responsible for registering a node to a cluster, and sending reports on pod status and resource utilization.
+ 		It continously looks for any changes in pod configuration file from Api-server and ensures that the pod and containers are running in healthy
+		desired state.
+		
+	c] KUBE-PROXY :
+		Kube-Proxy is a network proxy that runs on each node in a Kubernetes cluster.
+		It is responsible for maintaining network connectivity between services and pods.
+		Kube-Proxy is the one which creates IP address for new pods.
+		Traffic Routing
+		Service Discovery
+		Load Balancing
+		
+
+KUBERNETES WORKFLOW :
+-------------------
+In order to create 2 instance of applications, We create an configuration file for it. Then, we send it to Api-server directly or through CLI.
+->	Api-server runs the Config file through Schedular. The Schedular selects the worker node on which new nodes to be created based on
+	config file and resource availability.
+->	Api-server simultaneously sends the Config file to ETCD, In which the data and status is stored in an Key-value pair.
+->	Once, Schedular selects the worker node. The Control-Manager sends an object Config file to Kubelet through Api-server
+	inorder to create the desired objects.
+->	Kubelet after receving the object Config file, Creates the objects in their desired state in the Worker node.
+->	Whenever, the pod status is changed like killed,etc,.. The Kubelet updates the status to ETCD through Api-server.
+->	The Watch functionality of ETCD monitor's the Current and Desired status of the objects.
+->	If both status doesn't match then control loop which runs through control manager responds to these status changes and work towards
+	achieving the desired state.
+->	After application is deployed, If we wanted to make any request to the application, The Kube-Proxy takes our request and forwards it to
+	the corresponding pods.
+	
+	
+ENVIRONMENT SETUP :
+-----------------
+Local Setup - Minikube or Kind
+Production - Kubeadm, Rancher, EKS, ECS, etc,..
+
+
+KUBECTL SYNTAX :
+--------------
+kubectl [command] [type] [name] [flag]-> options like -f,-o, etc,..
+ |			|		|		|-> Name of the Resource
+ |-> CLI	|		|-> Resource types like pods,services,etc
+			|-> create,get,delete,decribe,etc,..
+			
+(e.g): kubectl get pods my-pod -o yaml
+
+
+YAML :
+----
+YAML stands for YAML Ain't Markup language (its not like HTML,XML)
+It's an serialization language (Commonly agreed language which is used to transfer data in the form of binary's(0's & 1's) over Network)
+.....
+
+
+PODS :
+----
+Kubernetes pods are the smallest deployable units that encapsulate one or more containers and provide shared resources.
+They are managed by controllers and provide features like scalability, fault tolerance, and simplified management.
+1]	Sidecar container / Helper container :
+	In certain scenario's we deploy multiple containers in single pod.
+	(e.g): When an application is deployed within a container, Its dependent configurations are stored in another database container.
+	Then a third container is deployed to manage refresh service related tasks (getting configuration updates from github for every 1hour ,etc).
+	These additional containers are called Sidecar / Helper containers. Which needed to be deleted / deployed along with application container.
+2]	Scaling :
+	Since, Containers in a pod share same network and volume. All of them can be scaled up or down together.
+3]	Pod Communication :
+	When a pod is created, An IP address and Set of port ranges are assigned to each pods. With this we can run same application in same port on
+	different pods of same node. Every container in a pod shares same IP address and Network space. So, Inter-communication between containers within
+	a pod use localhost and for communication to containers in other pod use IP address.
+4]	Pod Creation :
+	Single resource is easy to create with kubectl commands, but for multiple resources its better to go with YAML files (Configuration / Manifest).
+5] 	Commands used :
+	kubectl run nginx-pod --image=nginx
+	kubectl get pods
+	kubectl api-resources | grep pods
+	kubectl apply -f nginx-pod.yaml								-> Create, Update resources through yaml
+	kubectl delete pod nginx-pod1
+	kubectl get pods -l team=integration
+	kubectl get pods -l team=integration, app=todo
+	kubectl get pod nginx-pod1 -o wide
+	kubectl get pod nginx-pod1 -o yaml
+	kubectl describe pod nginx-pod1
+	kubectl exec -it nginx-pod1 -- bash							-> Entering a pod for debuging
+	exit														-> For coming out of -it mode
+	kubectl exec -it nginx-pod1 -c nginx-container -- bash		-> Entering a container within a pod for debuging
+	kubectl port-forward nginx-pod1 8083:80						-> Through this we can access application (which is inside pod) from internet
+	kubectl logs nginx-pod1										-> For logs
+	kubectl delete -f nginx-pod.yaml							-> Delete resources through yaml
+	kubectl delete pod nginx-pod
+	
+{{ NOTE - When we make changes in .yaml(pod name) and apply it, It creates a new pod, It doesn't modify existing pod}}
+	
+	
+SELF-HEALING & HIGH AVAILABILITY :
+--------------------------------
+High Availability (HA) in Kubernetes is crucial for ensuring that applications and services remain operational and accessible at all times,
+minimizing downtime. HA involves designing a system where the failure of a single component does not lead to the overall system's downfall.
+1] 	Replica :
+	High Availability (If one of location,node,pod,etc goes down but the application runs in other locations,nodes,pod,etc )
+	& Self-Healing (When a pod goes down, it brings up another in its place) can be achieved through Replicas in Kubernetes.
+2]	Commands used :
+	kubectl api-resources | grep replicaset
+	kubectl apply -f nginx-replicaset.yaml
+	kubectl get replicaset
+	kubectl get rs
+	kubectl get pods
+	kubectl delete po nginx-replicaset-6lg9t					-> By deleting an pod, we conclude that replicaset brings up required no of pods.
+	kubectl get nodes
+	minikube node add --worker -p local-cluster					-> Adding an additional node
+	kubectl get po -o wide
+	minikube node delete local-cluster-m02 -p local-cluster		-> By deleting node, we conclude that pods in deleted node is re-created in other
+																   node, which resulting in High Availability.
+	kubectl get po -o wide
+	kubectl delete all --all									-> Deletes all resources unconditionly.
+
+
+ROLLOUT & ROLLBACK :
+------------------
+1]	Rollout / Rolling Updates :
+	Rolling updates are the default strategy in Kubernetes. They ensure that the new version of the application is deployed gradually,
+	without causing downtime. This is achieved by scaling up the new version and scaling down the old version simultaneously.
+2]	Rollbacks :
+	Rollbacks are used to revert to a previous version of the application if the new version is not stable. This ensures minimal downtime and
+	maintains the overall availability of the application.
+3]	Deployment :
+	Rollout and Rollback can be automated using Deployment object in Kubernetes.
+	
+{{ NOTE - Hierarchy in an Deployment is Deployment -> Replicaset -> Pod -> Container }}
+
+4]	Scaling up and down :
+	Scaling can be achieved by two ways -
+		a] By changing replicas in Deployment.yaml and applying them
+		b] By using scale option in commands
+
+5]	Commands used :
+	kubectl apply -f nginx-deployment.yaml
+	kubectl get all
+	kubectl get po --show-labels								-> To get Labels associated with the objects
+	kubectl apply -f nginx-deployment.yaml
+		-> from { replicas: 2 } to { replicas: 4 }
+	kubectl scale --replicas=4 deployment/nginx-deployment		-> Scaling can be done in commands and through changing deployment.yaml files
+	
+{{ NOTE - Changing replicas through command doesn't change replicas inside deployment.yaml files,
+          So, Its preferred to use yaml files during works }}
+		  
+	kubectl apply -f nginx-deployment.yaml
+		-> from { image: nginx:latest } to { image: nginx:1.21.3 }
+	kubectl set image deployment/nginx-deployment nginx-container=nginx:1.21	-> Changing image through command
+	
+{{ NOTE - After applying old image version (Rollback), New Replica is created instead of altering the old one.
+          Kubernetes stores upto 10 replicas to store, so that we can use them for Rollback's and Rollout's.
+		  If needed we can change the no of replicas stored aswell }}
+		  
+	kubectl decribe <pod_name>
+	kubectl rollout history deployment/nginx-deployment			-> Gives history of rollout's ( No of revesion represents no of rollout's &
+																   Its best practice to give change of cause during rollout )
+	kubectl set image deployment/nginx-deployment nginx-container=nginx:1.21 --record	-> Through this change of cause is recorded
+	kubectl apply -f nginx-deployment.yaml
+		-> New annotation: section added in metadata: section	-> Recording change of cause through deployment.yaml file
+	kubectl rollout history deployment/nginx-deployment
+	kubectl rollout undo deployment/nginx-deployment --to-revision=1 	-> By this we can rollout to required previous revisions
+	kubectl rollout status deployment/nginx-deployment			-> Checks status of rollout
+
+
+SERVICES :
+--------
+Pods are created with their own network, Hence we cannot access a pod from outside of a cluster, we can access them from only within using IP address.
+(e.g : When we wanted to access an application within an pod, we use IP address to connect (within a cluster),
+	   But same IP address cannot be used from outside)
+But, note that during replica increase or decrease, rollout and rollback, new pods are always created. Hence, IP address also changes.
+
+{{ NOTE - Port-forwarding is used to access pods for debugging purposes}}
+
+Services are here to solve the above issue. Services are responsible for abstracting IP address from the pod.
+When an service is created, It has a stable IP address assigned and it is linked to an pod.
+By connecting to the service we can access the pod, even when pod IP address changes. Service takes care of internal pod mappings.
+
+1]	Advantages of Service :
+	a] Load-balancing - When there is more replica of the application and we try to connect to them, Service takes care of Load-balancing.
+	
+{{ NOTE - All service provides Load balancing }}
+	
+	b] Service discovery
+	c] Zero downtime deployments
+	
+2]	Types of Services :
+	a] ClusterIP service :
+	This Service exposes the pod to IP addresses internal to cluster. i.e, Only objects internal to cluster can access this service and
+	its associated pods. ClusterIP service is the default service associated in kubernetes.
+	b] Multi-port service :
+	When we have multiple containers in a pod and want to expose them, we use Multi-port service.
+	
+{{ NOTE - In Multi-port service, we must add a name feild for each container ports under port feild }}
+
+	c] NodePort service :
+	In order to expose our pod and its applications to outside world we use NodePort service. NodePort service has a static constant port (NodePort),
+	By using Cluster IP address along with NodePort we can access the pods. NodePort service act like ClusterIP service and redirects traffic
+	to pods. NodePort ranges from 30000 - 32767.
+	d] LoadBalancer service :
+	It's not secure to use NodePort service in production since we use node IP for its connection and when we restart node, IP address changes.
+	Hence we have LoadBalancer service which behaves as NodePort, but it access the LoadBalancer of cloud provider for security.
+
+3] 	Commands used :
+	kubectl api-resources | grep services
+	kubectl apply -f nginx-service.yaml
+	kubectl get svc
+	kubectl get pods
+	kubectl apply -f nginx-deployment.yaml
+	kubectl get pods
+	kubectl exec -it nginx-deployment-6c4f6d48b8-2fw7k -- sh			-> Entering pod and checking wheather we can access the application
+		-> curl <Cluster IP address>:8082
+		-> curl nginx-service:8082
+		-> exit
+	kubectl port-forward service/nginx-service 8083:8082				-> Using port-forward and connecting from Internet
+		-> In browser localhost:8083
+		-> ctrl+c
+	kubectl exec -it nginx-deployment-6c4f6d48b8-2fw7k -- sh
+		-> Executed a script for continous curl nginx-service:8082
+	kubectl logs nginx-deployment-6c4f6d48b8-2fw7k -f					-> To monitor logs
+	
+{{ NOTE - While doing Port-forwarding Load-balancing doesn't work }}
+
+	kubectl get endpoints												-> To check what are all pods associated with the service (Endpoints)
+	kubectl describe service/nginx-service
+	kubectl apply -f nginx-NodePort_service.yaml
+	kubectl get svc
+	minikube ip -p local-clus											-> Get cluster IP address
+		-> In Internet http://192.168.67.2:30000/
+	minikube service nginx-service -p local-clus						-> Acessing Nodeport service from Internet from CLI
+	kubectl apply -f nginx-NodePort_service.yaml
+		-> By changing ( type: NodePort to type: LoadBalancer )
+	kubectl get svc
+	minikube service nginx-service -p local-clus						
+
+
+INGRESS :
+-------
+1]	NodePort summary :
+	One of the way to expose our application to outside of cluster is through NodePort service. In it we are opening an port on each node and
+	exposing it to outside of cluster. The user uses node IP address along with NodePort inorder to connect, then the load is forward to
+	the respective pods.
+	
+	Cons in NodePort service :
+	a] The port ranges from only 30000 - 32767
+	b] Node IP address may change after restart
+	c] It's not secure to open a port in node.
+
+2]	Cons in LoadBalancer service :
+	Above Cons are resolved throgh LoadBalancer service,
+	a] But it can be used only if we you have cloud operated environment like Google kubernetes engine, EKS, etc,.
+	If we in bare metal we need to setup endpoints with proxy server,etc,.
+	b] When we create LoadBalancer service, A LoadBalancer is created in cloud and we need to pay of it. And its costly
+	Managing and Paying for multiple Load Balancer is costly and hard.
+	
+3]	Ingress :
+	It will allow us to have single Load Balancer for multiple service and Route the load to its respective pods and applications
+	based on Ingress rules (host and path). And we need Ingress controller in our cluster to read and process the Ingress rules.
+	Ingress controller :
+	Most used - Nginx Ingress controller, Happroxy, traefix, Istio
+
+4]	Request Work-flow :
+	http request -> Load Balancer -> Ingress Controller -> Ingress Rules (Read & Processed by Ingress Controller) -> Pod -> Application
+	
+5] 	Ingress rules types :
+
+	a] Path-based routing - It allows you to route HTTP traffic to different services based on the path of the URL.
+	This is useful when you have multiple services that serve different content or functionality based on the path.
+	For example, you can have one service handle requests for /app1/* and another service handle requests for /app2/*.
+	
+	b] Host-based routing - It is also known as name-based virtual hosting, allows you to route HTTP traffic to different services
+	based on the hostname in the URL. This is useful when you have multiple services that serve different content or
+	functionality based on the hostname. For example, you can have one service handle requests for myservicea.foo.org and another service
+	handle requests for myserviceb.foo.org.
+	
+	example from  - 15:00 - 22:00 ( Pavan Elthepu - Ingress )
+	
+6] 	Default backend :
+	The default backend is a service that handles requests that do not match any specific path or host in the Ingress rules.
+	This is useful when you want to provide a default response for unknown or unhandled requests, such as returning a 404 error or
+	redirecting to a specific domain.
+	If you don't specify a default backend in your Ingress configuration, the Ingress controller will typically provide a default backend that
+	returns a 404 response.
+
+7]	Configuring TLS certificate :
+	A TLS (Transport Layer Security) certificate is a digital file that helps to authenticate and secure data transfers across the internet.
+	It is used to establish a secure connection between a web server and a web browser, ensuring that data is transmitted privately and
+	without modifications, loss, or theft.
+	Types or ways for generating TLS certificates :
+	a] Self-Signed Certigficates
+	b] Purchase an SSL Certificate
+	c] Use Let's Encrypt Certificate
+	d] Internal PKI Infrastructure
+
+8]	Command used :
+	minikube start --vm=true -p ingress-cluster				-> New cluster with VM driver for working with Ingress controller
+	
+{{ NOTE - We haven't Installed or worker with Virtual box or VM driver, we used Minikube with docker driver itself }}
+
+	kubectl apply -f nginx-deployment.yaml
+	kubectl apply -f nginx-service.yaml
+	kubectl get all
+	minikube addons enable ingress -p local-clus			-> We are adding Ingress controller to our local cluster
+	
+{{ NOTE - Ingress controller is an application inside a pod which is exposed by services }}
+	
+	kubectl get po -n ingress-nginx							-> Checkig wheather Ingress controller is enabled or not
+	kubectl get svc -n ingress-nginx						-> Checkig wheather Ingress controller is enabled or not
+		-> Here, Service assigned to ingress pod is NodePort service, when we use cloud environment it will be LoadBalancer service
+	kubectl api-resources | grep Ingress
+	kubectl apply -f nginx-ingress.yaml
+	kubectl get ing											-> ing is short form for Ingress
+	minikube ip -p local-clus								-> This gives us the IP address of our local cluster
+	sudo vim /etc/hosts										-> editing hosts file by adding local cluster IP address mapped towards nginx-demo.com
+	kubectl describe ing nginx-ingress
+		-> Configured Default backend can be seen here
+		
+	openssl req -x509 -newkey rsa:4096 -sh256 -nodes -keyout tls.key -out tls.crt -subj "/CN=nginx-demo.com" -days 365
+															-> Generating an Self-Signed certificate for 365 day
+
+	kubectl create secret tls nginx-demo-com-tls --cert tls.crt --key tls.key			-> Generating an Secret
+		-> Add the secret to ingress yaml file
+
+
+NAMESPACE :
+---------
+Namespace is organizing various kubernetes objects associated with various applications, for easy management of cluster and sharing a single cluster
+among varios teams, projects, customers, etc,..
+a]	Namespace is a way to organise a cluster into virtual sub-cluster.
+b]	When Kubernetes objects are created we can organise them within different sub-cluster.
+c]	Any no of Namespaces is supported in a cluster, they are logically seperated from one another but they still can communicate with eachother.
+
+1]	Need for Namespaces :
+	a]	Avoiding conflicts - 
+		In a single namespace we cant have same name of different kubernetes objects, which causes conflict issues.
+		But, having different namespace we can create kubernetes objects with same names in different namespace.
+	b] 	Restricting access -
+		Providing access to only authorized person for production namespace, while giving other for access in development namespace.
+	c]	Resource limits - Limiting resources of a namespace can help other applications in different namespace run smoothly.
+
+2]	Default Namespaces and its types :
+	The following Namespace is created when an Cluster is created.
+	a] Default -
+		Whenever any kubernetes objects are created, they will be created in Default Namespace only (if any specific Namespace is not mentioned).
+	b] Kube-Node-Lease -
+		Whenever an node goes down, the kubernetes cluster identifies it and moves it's respective pods to different node.
+		It is achieved by lease objects, which sends heart-beat to cluster stating wheather nodes are running or not.
+		Each node have their own associated lease objects. These objects are stored in kube-node-lease namespace.
+	c] Kube-Public - 
+		It is used for public resources. Where all have access to this namespace with only read permission.
+	d] Kube-System -
+		This namespace stores the objects created by kubernetes control plan.
+	e] We can create our own Namespaces
+	
+3]	Commands used :
+	kubectl create namespace nginx									-> Creating new Namespace
+	kubectl get namespace
+	kubectl api-resource | grep namespace
+	kubectl delete ns nginx
+	kubectl apply -f nginx-Namespace.yaml
+	kubectl get namespace
+	kubectl apply -f todo-Namespace.yaml
+	kubectl get namespace
+	kubectl apply -f nginx-deployment.yaml							-> Deployment is created in new Namespace
+		-> Add " namespace: nginx " inside metadata: section
+	kubectl get all -n nginx
+	kubectl get all --all-namespaces								-> Kubernetes Objects from all Namespaces
+	kubectl get all -A												-> Short version to get Kubernetes Objects from all Namespaces
+	kubectl config set-context --current --namespace=nginx			-> Switching to different Namespace from Default Namespace
+	curl todo-api-service:8080/api/todos							-> Inorder to access application if all service in Default Namespace
+	curl todo-api-service.todo:8080/api/todos						-> Inorder to access application if a service in Different Namespace
+		-> Just add .<Namespace name> inorder to access from that Namespace
+		
+
+VOLUMES :
+-------
+Volumes are common directories which can be accessed by all associated pods/containers. Volumes are introduced to solve below problems.
+
+1]	Problems solved by Volumes :
+	a] Data loss - When we apply Deployment.yaml or Replicaset.yaml, whenever an pod goes down another is created. But, Datas in old pod gets lost
+	when it goes down, This resulting in Data loss.
+	b] Data sharing - When replicas of same application is made, the data is stored in containers associated with them, there was no way to share
+	data across pods/containers.
+
+{{ NOTE - Above 2 Issues are observed at container level }}
+	
+2]	Types of Volumes :
+	a] emptyDir Volume -
+	Initially, The Data is stored in Container level, Which leads to above Problems. But, emptyDir is an common directory at pod level. 
+	Hence, by storing data in it will not result in above Problems. This solves issue at Container level, but above both problem still exist on pod
+	level.
+	b] Hostpath -
+	This method resolves above problems at pod level, It stores data in a common path of pods in node. But, Sharing data between pods of
+	different nodes and avoiding data lose during node restart is not possible.
+	c] Persistent volume -
+	Above both volumes are ephemeral volumes ( They get deleted when a pod or node goes down ), But Persistent volume is non-ephemeral.
+	i.e, Here the volume is stored in external storages ( EBS, EFS, etc,. )
+	Kubernetes Persistent Volumes (PVs) are a way to provide durable storage to Kubernetes applications.
+	PVs are cluster resources that exist independently of any individual Pod, allowing data to persist even when Pods are deleted.
+	1]	Components of Persistent volume :
+		a] Persistent volumes - Here we specify the capacity, access mode, path for pv's.
+		b] Persistent volume claims - Here we also specify the capacity, access mode same as pv.yaml, for the purpose of matching it.
+		we use pvc in deployment.yaml instead of pv for various reasons such as portability, dynamic provisioning, etc,.
+		c] Storage classes - We use it in order to create pv's dynamically. Storage classes are defined in pvc.yaml files.
+		
+{{ NOTE - Persistent volumes, Storage classes are available for entier cluster, where as pvc is available at namespace levels }}
+		
+{{ NOTE - deployment ( container details, pvc details ) -> pvc ( pv details, storage class details ) }}
+		
+	2]	Access modes ( pv.yaml component ):
+		a] ReadWriteMany - Read and Write can be performed by many nodes, This is best option when we have multi nodes for accessing the volumes
+		b] ReadWriteOnce - Read and Write can be performed by single node, This is best option when we have a single node for accessing the volumes
+		C] ReadOnlyMany - Only Read can be performed by many nodes, This is best option when we have multi nodes for accessing the volumes
+		d] ReadOnlyOnce - Only Read can be performed by single node, This is best option when we have a single node for accessing the volumes
+		e] ReadWriteOncePod - Read and Write can be performed by single pod in a node
+		
+{{ NOTE - When we say Container level - Volumes are directories which created in pods and remains till container stays alive,
+		  Pod level - Volumes are created at nodes, and the volumes remain till pod stays alive }}
+	
+3] 	Commands used :
+	kubectl apply -f Deployment.yaml
+		-> From Volumes directory
+	kubectl get po
+	kubectl port-forward svc/mongo-svc 32000:27017
+	
+	In Mongo Composs -> Creation of data
+	
+	kubectl exec -it mongo-78474469b4-rvjl9 -- /bin/bash			-> Entering pod, which work in VS but not in GIT bash
+		-> By killing a process inside container we can observe above 2 mentioned problems.
+	kubectl apply -f Deployment.yaml
+		-> Added " volumeMounts:
+						- mountPath: /data/db						-> Directory where data is stored in container
+						  name: mongo-volume " and					-> Volume name
+		   Added " volumes											-> Defining Volume
+					- name: mongo-volume							-> Volume name
+					emptyDir: {} "									-> Volume type
+	kubectl get po
+	kubectl port-forward svc/mongo-svc 32000:27017
+	
+	In Mongo Composs -> Creation of data
+	
+	kubectl exec -it mongo-78474469b4-rvjl9 -- /bin/bash
+		-> By killing a process inside container we can observe above 2 mentioned problems resolved.
+		   This solves issue at Container level, but above both ptoblem still exist on pod level.
+	
+	minikube ssh													-> Command allows users to access the Minikube environment for debugging purposes.
+	sudo ls /var/lib/kubelet/pods									-> This directory is were emptyDir volume is stored (At Node)
+	kubectl delete po <pod_name>
+		-> Reported problems occur at Pod level, i.e - pod gets recreated due to replicaset, but data is lost.
+	
+	kubectl api-resources | grep Persistent
+	
+{{ NOTE - Deletion of pvc and pv gets stuck in terminating state when that pvc and pv is used by pods,
+          In order to resolve it we must delete pod attached }}
+
+	kubectl apply -f .\pv-1.yaml
+	kubectl get pv
+		-> Status = Active
+	kubectl apply -f .\pvc-1.yaml
+	kubectl get pvc
+	kubectl get pv
+		-> Status = Bound
+	kubectl apply -f .\Deployment-4.yaml
+		-> Container not gets created, since pv path not exist
+	minikube -p JEKS ssh
+		-> mkdir /storage/data
+	kubectl get all
+	kubectl delete deployment mongo
+	kubectl delete pvc mongo-pvc-sc										-> Resources are deleted to remove pv
+	kubectl delete pv mongo-pvc-sc
+		-> Status = Retain 												-> Status = Retain, when assigned pvc is deleted
+	kubectl apply -f .\pv-1.yaml
+	kubectl apply -f .\pvc-1.yaml
+	kubectl apply -f .\Deployment-1.yaml
+	kubectl get all
+	kubectl port-forward svc/mongo-svc 32000:27017
+	kubectl apply -f sc-1.yaml
+	kubectl get sc
+	
+
+STATEFULSETS :
+------------
+1] 	Stateful vs Stateless :
+	Stateful applications maintain information about the state or condition of a user's interaction over time,
+	while stateless applications do not retain any information about previous interactions.
+
+2]	Problems faced :
+	a] When we want an depoyment with persistant volume attached to be in highly available, we increase replicaset, Due to sharing same
+	Persistent volume between replicas, It causes data in-consistent.
+	-> This can be resolved by having different Persistent volumes for different replicas.
+	
+	b] 
+
+]	Important commands :
+	
+	
+CONFIGMAPS & SECRETS :
+--------------------
+
+There are 3 different ways to configure a data :
+a]	Passing as arguments
+b]	Configuration files (ConfigMaps & Secrets)
+c]	Environment variables
+
+Whenever we develop any application we should not code the properties which change for each environment, Instead we should configure those properties.
+So, that we don't need to rebuild the image whenever these values changes, All we do is just pause those values from outside that way we can reuse
+the same image for different environments like Dev, QA, Staging and Production and the method is ConfigMaps & Secrets.
+
+{{ NOTE - ConfigMaps & Secrets are special type of Volumes }}
+
+a]	CONFIGMAPS :
+	Config map is a kubernetes object that lets you store configurations, Which can be used in different applications.
+
+{{ NOTE - ConfigMap and the Pods use them must be in same Namespace }}
+
+b]	SECRETS :
+	Password is a confidential data and there might be other confidential information like API keys and certificates which we don't want everyone to
+	see to configure such confidential data, Kubernetes provides another type of volume for it called Secrets. Config maps and Secrets are almost
+	same in terms of how we create them and use them the only difference is that secrets are secured the data of the secrets can be encrypted
+	in hcd database.
+
+b]	YAML contents :
+	data : 					- Instead of spec which has container details, we use data : to store username/password
+	immutable :				- By keeping this true, we will not be able to update ConfigMap files, instead we can only delete and re-create
+	valueFrom :
+		configMapKeyRef :
+			key :
+			name :			- These sections are added inorder to access data from ConfigMap.yaml
+	valueFrom :
+		secretKeyRef :
+			key :
+			name :			- These sections are added inorder to access data from secret.yaml
+		
+c]	IMPORTANT COMMANDS :
+	kubectl api-resources | grep ConfigMap		
+	echo -n <password> | base64						- Password stored in secrets.yaml should me in the form of base64,
+													  hence we use this command to convert it.
+
+
+PROBES :
+------
+
+Any application can be in an analogy state due to various reasons like
+	a] Bugs in the code
+	b] Timeouts while communicating with an external service
+	c] DB connection failures
+	d] Out of memory issues
+	e] etc.,.
+In all these situation the Pod will look like it's running from the outside but internal functionality is broken because of these bugs and
+users won't be able to access the application in all these cases, We expect the container to restart but kubernetes doesn't restart because
+by default kubernetes just checks the contains main process and decides if the container is Healthy or not it doesn't check the internal functionality
+of our application only if the main process crashes kubelet will restart the container. If we don't heal these unhealthy pods our service becomes
+unstable, debugging such Parts is also tricky as the Pod status shows running but we don't get the expected output in our ports we deployed.
+So, far mongodb is the main process as long as the mongodb process is running, kubernetes just to treats the pod as healthy no matter if the internal
+functionality is working correctly or not.
+Inorder to resolve this issue we have Probes. Basically, we are customizing the behavior of kubernetes to check if a container is healthy or not.
+
+{{ NOTE - Probes are at Container level, not Node level }}
+
+	1] TYPES OF PROBES :
+	
+		a] Liveness probe - With Liveness probe we can instruct kubernetes on how to detect whether a pod is alive or not. In other words,
+		healthy or not by the use of commands or network requests inside the container. If the liveness probe command gives the exit code = 1
+		which indicates failure and kubernetes assumes the Pod is an Unhealthy and kubelet restarts the pod.
+		In short, liveness probe ensures we always have Healthy pods available.
+		
+		+] PROBE MECHANISUM :
+		
+			a] Command Execution - 
+				Probe -
+					exec :
+						command :
+							- mongo
+							- --eval
+							- "db.adminCommand"('ping')"
+				Success - 0 (exit code)
+				Failure - 1 (exit code)
+				
+			b] Network response (HTTP) -
+				Probe -
+					httpGet:
+						path: /health
+						port: 8080
+				Success - http response in 200-399
+				Failure - http response in Other than 200-399
+				
+			c] TCP -
+				Probe -
+					tcpSocket :
+					port : 8080
+				Success - If port accepts traffic
+				Failure - If port can't accepts traffic
+		
+		+] PROBE CUSTOMIZATION :
+		
+			a] initialDelaySeconds		- Delay to run the probe initially 
+			b] periodSeconds			- How frequent the probe should execute after initial delay
+			c] timeoutSeconds			- Timeout period to mark as failure
+			d] failure/SuccessThreshod	- How many times to retry in case of failure
+	
+		b] Readiness probe - Readiness probe identifies when a container can handle external traffic received from a service, just like
+		liveness probe we can run Readiness probe and if the Readiness probe fails then kubernetes removes the IP address of the Pod
+		from the endpoints of all services it belongs to and when the Pod is not part of the service the Pod will not get any traffic.
+		Probe is very helpful to instruct kubernetes that a running container should not receive any traffic until it is ready this way
+		we can increase our success response rate.
+		Difference between liveness probe and Readiness probe is when a liveness probe is failed the Pod is restarted whereas when Readiness probe
+		fails the Pod is not restarted but it will be removed from the endpoint list of the service so that it will not receive any traffic and
+		once the Readiness probe succeeds the Pod is added back to the service and it gets the usual traffic.
+		
+		c] Startup probe - Startup probe provides a way to delay the execution of liveness probe and Readiness probe until a container indicates
+		it's able to handle them meaning liveness and Readiness probes are executed only if the startup probe succeeds.
+		If a container fails its startup probe then the container is killed and follows the port's restart policy. We can set the restart policy
+		in the port spec this defines when the port should get restarted.
+		Restart policy values :
+			+] always ( Default value ) - No matter how the Pod is exited it should always restart the pods.
+			+] on failure - Pod should get restarted only if it exits with a non-zero status
+			+] never - no matter what how the Pod exits it should never restart.
+
+
+RESOURCE MANAGEMENT :
+-------------------
+
+
+AUTO-SCHEDULING :
+---------------
+
+In real time we will have so many nodes in the kubernetes cluster and when we create a pod kubernetes scheduler filters the nodes that can run
+this pod and then it runs a set of functions to score the node fesaibility from 1 to 10. And finally it picks a node with the highest score
+and updates the node name onto the pod. Kubernetes scheduler considers our pod resource requirements and other customizations defined by us while
+scheduling the port.
+However kubernetes schedules the deleted pod onto a different node when we use deployments or stateful sets but there may be cases,
+Where we want to deploy our pod onto specific nodes.
+
+There are different ways in which we can instruct kubernetes to schedule our pods onto specific nodes,
+a] nodeName - Instructing kubernetes to deploy all our deployment, replicas onto a specific node
+b] nodeSelector - 
+
+
+1] 	COMMANDS :
+	kubectl get pods
+	kubectl label node <nodename> team=analytics			-> Adding a label to a node
+	kubectl get nodes --show-labels							-> Shows all labels of all nodes
+	kubectl get nodes -l team=analytics						-> 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+HELM :
+----
+Helm helps you manage Kubernetes applications — Helm Charts help you define, install, and upgrade even the most complex Kubernetes application.
+
+
+PROBLEMS SOLVED BY HELM :
+-----------------------
+1]	When we wanted to deploy an application in Kubernetes, We usually create and run lots of manifest files (Like deployment.yaml, service.yaml, etc)
+	The complexity increases, as no of applications we deploy.
+	-> Helm helps us to package or bundle all the manifest files required for an application, And allows us to run it in single go.
+	   Chart is the term we use for package or bundle in Helm.
+
+2]	In order to deploy an application, we need to deploy its dependencies first.
+	(e.g) : For deploying an springboot application we needed to deploy Mongo DB first.
+	-> But, with help of Helm we can instruct it to deploy Mongo DB first, Stating it as dependency before deploying our application.
+	
+3] 	Better configurability and deployability - When we wanted to deploy certain application in QA, Dev, etc,. environments, we need to change the
+	environment variable values for each environments each time.
+	-> But, with Helm we can assign placeholders in varible section, and we can change it accordingly using value.yaml files.
+	
+4]	When we deploy certain upgrade version to a application and wanted to rollback to previous version, we can rollback pods, deployments,
+	services, etc,. But, rollbacking secrets is not possible using kubectl.
+	-> But, with help of Helm we can rollback all objects (including secrets) to its previous version we needed.
+	
+
+HELM ARCHITECTURE :
+-----------------
+Helm is an Command line tool. When we use Helm cli, behind the scene it uses its library to prepare manifest file, interact with Kubernetes, 
+And handle deployment smoothly. If needed it downloads charts from ArtifactHub (Artifact repo). It uses kubectl config file to establish its API
+communication with Kubernetes (If required we can do configuration modifiactions).
+
+
+DIFFERENT TYPES OF YAML FILES :
+-----------------------------
+1] 	Chart.yaml - Contains metadata of chart ( like name, version, etc,. )
+	dependencies also to be added here (like mongo db dependencies)
+
+2]	templates - Directory which contains Kubernetes manifest files, If we needed any manifest file to be added or removed for our application.
+	We just need to add or delete them in templates directory.
+
+3] 	values.yaml - In this file we give the values for the placeholders/parameters which we use in .yaml files inside templates.
+	When we encounter "{{ value.--.---.  }}" in .yaml files, It means the value is obtained from values.yaml file.
+
+4] -helper.yaml - reuseable templates are stored here (similar to method in JAVA)
+
+GO TEMPLATING SYNTAX :
+--------------------
+Helm uses Go Templating syntax for templating, which is "{{ value.--.---.  }}"
+
+	1] {{ .Values.image.tag | default .Chart.AppVersion }}  -> | default, which means if there is no value given in values.yaml file we need to 
+	consider the default value.
+	
+	2] In Helm templates, {{ | quote }} is a built-in function that quotes a string value. It is commonly used to properly escape string values
+	that will be inserted into YAML or JSON configuration files. The quote function simply wraps the string in double quotes and escapes any
+	internal quotes or special characters.
+	(e.g) :   myValue: {{ .Values.someValue | quote }}
+	-> And the value of .Values.someValue is foo"bar, without quoting it would render as: myValue: foo"bar.
+	   Which is invalid YAML. Using | quote renders it correctly as: myValue: "foo\"bar"
+	   
+	3] The range function in Helm templates allows you to iterate over a list or map and generate multiple resources based on the elements.
+	It is similar to a "for each" loop in programming languages.
+	{{- range .Values.ingress.tls }} -> It loops over the .Values.ingress.tls value from values.yaml file
+	
+	4] {{- if .Values.ingress.enabled -}} -> based on value of ingress in values.yaml file it gets enabled.
+	
+	5] nindent function
+	
+	6] {{-  -> clears free spaces
+	
+{{ NOTE - Chart template guide from Kubernetes documentations for more syntaxes }}
+	
+	
+COMMAND USED :
+------------
+helm version
+helm create todo-api											-> Creating an chart
+	-> Creates a directory structure
+helm lint .														-> To check if there is any errors
+	-> It gives an error stating dependency chart available
+helm dependency build											-> To build dependency
+	-> mongo-db dependency built in charts directory
+helm install todo-api .											-> To build our required application
+
+............s
+	
+	
+ aws iam create-policy \
+    --policy-name AWSLoadBalancerControllerIAMPolicy \
+    --policy-document file://iam_policy.json
+	
+	
+ eksctl create iamserviceaccount \
+  --cluster=demo-eks-roboshop \
+  --namespace=kube-system \
+  --name=aws-load-balancer-controller \
+  --role-name AmazonEKSLoadBalancerControllerRole \
+  --attach-policy-arn=arn:aws:iam::730335525212:policy/AWSLoadBalancerControllerIAMPolicy \
+  --approve
+
+vpc-03f496672198de46d
+vpc-0e2023374d1a7e034
+
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=demo-eks-roboshop --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller --set region=us-east-1 --set vpcId=vpc-0e2023374d1a7e034
+
+
+---------------------------------------------------
+HELM :
+----
+	
+	
+
+	
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+	
+	
+	
+	
+
+
+	
+	
+	
+
+
+	
+	
+	
+
+	
+
+
+
+
+COMMANDS USED DURING SETUP :
+--------------------------
+minikube start --nodes 2 -p local-cluster --driver=docker
+minikube start --nodes 1 -p Jenkins_EKS --driver=docker
+minikube status -p local-cluster
+kubectl get nodes
+docker ps
+kubectl config get-contexts										-> Gets no of cluster, Current cluster represented by *
+kubectl config set-context local-cluster						-> Switch between clusters (to local-cluster)
+minikube node add --worker -p local-cluster						-> Adding an worker node to cluster (local-cluster)
+minikube node delete <node name> -p local-cluster				-> Deleting an node from cluster (local-cluster)
+minikube dashboard --url -p local-cluster						-> Gives URL of minikube dashboard
+
+
+ISSUES FACED :
+------------
+"ErrImagePull" later into "ImagePullBackOff"
+	-> After few mins it resolved on its own and now it's in "running" state.
+	
+
+
+
+
+n
+
+
+
