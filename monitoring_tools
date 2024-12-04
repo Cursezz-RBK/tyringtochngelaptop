@@ -1,0 +1,286 @@
+
+PROBLEMS ADDRESSED BY OBSERVALITY, MONITORING :
+---------------------------------------------
+1]	How good is an application's code, there always will be an bug in it. If customer identifies the bug first, It cause bad reputation
+	for the application and it might result in losing the customer. But, If we were to identifiy the bug 1st and resolve it,
+	It results in excellent service support, growth of application.
+	
+
+MONITORING :
+----------
+Monitoring involves the systematic observation and tracking of a system, application, db, or service over time to gather data and provide insights.
+This helps in diagnosing issues, identifying bottlenecks, and optimizing performance.
+1]	Types of Monitoring :
+	a] Server Monitoring - Tracking server performance, resource utilization, and availability to ensure efficient operation and
+	   identify potential issues.
+	b] Application Monitoring - Monitoring application performance, user interactions, and error rates to improve user experience and
+	   identify areas for improvement.
+	c] Network Monitoring - Tracking network traffic, latency, and packet loss to ensure reliable communication and identify network issues.
+	
+2]	Metrics oberved in Monitoring :
+	a] Latency - Time it takes for a request to travel from the client to the server and back
+	b] Traffic - No of requests a system receives over a specific period
+	c] Errors - Percentage of requests resulting in errors, such as 404 Page Not Found or 500 Internal Server errors
+	d] Saturation - Measures resource utilization, including CPU, memory and disk space.
+
+
+OBSERVABILITY :
+-------------
+Observability is also known as O11y (11 letters between O and y). It is the ability to understand and troubleshoot complex systems by providing
+insights into their internal workings. It involves collecting and analyzing data from various sources to gain visibility into the system's behavior.
+Observability is essential for monitoring and troubleshooting as it helps in:
+	a] Error Detection - Identifying errors and exceptions in real-time, allowing for swift resolution.
+	b] Root Cause Analysis - Analyzing data to determine the root cause of issues, enabling targeted fixes.
+	c] Performance Optimization - Optimizing system performance by identifying bottlenecks and improving resource utilization.
+	
+1]	3 Pillars of Observability :
+	a] Logs - It provide chronological record of events, or transactions within a system. Tells us When and What happend to the Application/System.
+	b] Traces - Help track the flow of requests through various services and components of a system.
+	c] Metrics - Quantitative measurements that offers a snapshot of a system's performance over time.
+				 It includes Respose time, Error rate and resource utilization.
+
+
+BASIC CONCEPTS :
+--------------
+1]	Metrics :
+	Metrics are key indicators which tell us how a system is behaving. It represents a numerical measurement at a specific time.
+	Generally, a metric considers a name and value, optionally it may contain labels, which are used for querying and analysis.
+	
+	(e.g) : http_request_count {code=200} 20-> value
+				|					|-> label
+				|-> name
+
+2] 	TSDB (Time Series Data Base) :
+	It consists of sequence of datapoints measured at specific time intervals, Each datapoints includes a time stamps and its associated
+	no of requests, at that movement. Relational database, No SQL database can't store this data. Hence, we use TSDB (Time Series Data Base).
+	TSDB organises Time Series Data in a way that allows fast and performal retrival of historical datapoints.
+	Popular TSDB - influxdb, OpenTSDB, Timescale DB, Prometheus.
+	
+3]	Scraping :
+	Refers to the process of collecting metrics from monitored targets by sending HTTP requests to their /metrics endpoints.
+
+4]	Endpoint :
+	Refers to a URL where Prometheus can scrape metrics from. Prometheus collects metrics by periodically sending HTTP requests to these endpoints
+	and parsing the response to extract the metric values.
+
+5]	HTTP requests :
+	They are the primary way of communicating between a client (like a web browser) and a server. When a client wants to access a resource on the
+	internet, it sends an HTTP request to the server hosting that resource.
+
+
+PROMETHEUS :
+----------
+It was created by Google for their internal use and now its been maintained by CNCF.
+It is an Open source Observability & Monitoring tool designed to gather metric from various configured applications and store them in a TSDB.
+With collected Time series data we can create cool dashboards that provide comprehensive insights and analytics about system performance and behavior.
+Additionaly, Time series data is used to set alrets, notifications for critical events such high CPU usage, service outage, etc,.
+It also provides Native support for Containers and Kubernetes.
+Other Monitoring tools are Nagios, Datadog, etc,. But due to the fact Prometheus is Open source and provides Native support to Kubernetes, it stands
+above others.
+
+
+PROMETHEUS ARCHITECTURE :
+-----------------------
+1] 	Prometheus Server :
+	a] Collects Metrics - Prometheus server is considered as the core component, It is responsible for collecting metrics from various Targets
+	( such as Application, Bare Metal servers, Kubernetes clusters, Database servers, etc,.. ) by scraping the endpoints ( pulling the metrics )
+	and stores them in TSDB as Time Series Data.
+	b] Stores in TSDB - The TSDB is present in our local and data stored in them is retained for only 15 days, But it can be increased by
+	configuring data to S3, etc,.
+	c] Provides an API - It provides API to querry data from TSDB. Clients like Grafana and Prometheus UI can querry this data for visualization.
+
+2] 	Client libraries :
+	When we wanted to capture specific custom metrics of an application instead of system metrics, we need to add certain code to application
+	to capture these metrics, This process is called Instrumentation. This can be achieved through Prometheus Client libraries.
+	
+3]	Exporters :
+	When Metrics captured from certain external applications are different from what we wanted, we use Exporters to gather those metrics and 
+	convert them to our required format and send them to Prometheus through HTTP endpoints. (e.g) : Node export, Mongo DB exporters,etc,..
+	
+4] 	Push Gateway :
+	When applications run very fast ( such as Batch jobs, Lambda functions which run only for few seconds ), Its hard for Prometheus server to fetch
+	data. In these scenarios we use Push Gateway, which is more like an intermediate storage, where all short-lived applications store their metrics.
+	From there Prometheus server collects the metrics. Push Gateway uses double storage, Hence its better to use it cautiously.
+	
+5] 	Service Discovery :
+	It is a key feature in Prometheus that allows it to automatically discover and scrape metrics from targets.
+	Prometheus supports several service discovery mechanisms, including Kubernetes service discovery.
+	With Kubernetes service discovery, Prometheus can automatically discover and scrape metrics from Kubernetes services, endpoints, pods, and
+	other objects by querying the Kubernetes API.
+	
+6] 	PromQL & Prometheus UI :
+	Data's stored in TSDB can be viewd by using Prometheus UI ( By accessing it in port 9090 ), But it doesn't provide any Graphical representation.
+	For Graphs we need to configure Grafana. Prometheus UI is used for Adhoc commands and Debugging.
+
+7]	Alert Manager :
+	We use certain rules and conditions to set Alert and Notifications through Alert Manager. And It send Alert through Slack, Email, Teams,etc,.
+	
+
+PROMETHEUS INSTRUMENTATION :
+--------------------------
+When we wanted to capture specific custom metrics of an application instead of system metrics, we need to add certain code to application to capture
+these metrics, This process is called Instrumentation.
+The following changes to me made for prometheus to scrape the endpoints :
+
+1]	The following dependency is added into pom.xml file for getting required custom metrics,
+	a]	Actuator - This is added inorder to obtain the application metrics.
+		(e.g) :
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+			<version>3.2.0</version>
+		</dependency>
+
+	b]	Micrometer - This added inorder to convert application metrics to prometheus understandable metrics.
+		(e.g) :
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+2]	Next we need to make changes in prometheus-server configuration,
+
+	kubectl get config-map -n monitoring
+		-> We obtain prometheus-server configuration
+		
+	kubectl edit cm prometheus-server -n monitoring
+		-> New job section with required prometheus configurations are made under scrape config	
+		
+	code ~/.zhsrc														-> By using this command and adding the export, we can open prometheus-server
+		-> add  export KUBE_EDITOR='code --wait'						   config file in some editors.
+		
+3]	Commands Used :
+	kubectl create namespace todo
+	kubectl config set-context --current --namespace=todo
+	kubectl get pods -n todo
+	helm install todo-api .
+	kubectl get pods -n todo
+	kubectl get cm -n monitoring
+	kubectl edit cm prometheus-server -n monitoring					-> By adding the required configurations to the prometheus-server config-map,
+																	   we can add the application as target in prometheus dashboard.
+																	   (For me application was not up, but target was added in dashboard)
+
+
+PROMETHEUS SERVICE DISCOVERY :
+----------------------------
+
+	
+
+	
+	
+	
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ELK / PROMETHEUS / GRAFANA :
+--------------------------
+The ELK stack (Elasticsearch, Logstash, and Kibana) is a popular open-source log management and analysis platform.
+Prometheus is an open-source monitoring and alerting toolkit, while Grafana is an open-source data visualization and monitoring tool.
+
+
+
+
+
+
+
+
+
+
+
+ELK STACK :
+---------
+ELK involves Elastic Search, Logstash & Kibana. We also have Beats, Elastic Agents which kind of replacement for Logstash with additional features.]
+Elastic is the company which produced all the above tools and they are all written in JAVA.
+
+
+TOOLS IMPORTANCE :
+----------------
+Beats - Collect metrics/logs from various sources (we have different types of Beats to collect different types of Data/Metrics) and
+		sends to Logstash or Elasticsearch.
+Logstash - It is used as Parser, Filter, Transformer for the inputed logs/metrics and sends it to Elasticsearch.
+Elasticsearch - It's more like a Storage (DB), In which we can perform CRUD operations, Search (It acts like a search engine in websites),
+				Ranking of the search results (Based on certain algorithms). Connecting to Elasticsearch is by using API.
+				Search and Ranking is done using DSL (Domain Specific Language)
+				CRUD - GET, POST, PUT, DELETE
+				Search - ip/_search
+Kibana - It is an Dashboard, Frontend tool of ELK stack.
+Elastic agent - It performs same tasks as Beats, But it has an uniformed single agent instead of multiple ones.
+
+
+FLOW :
+----
+Beats ( Configured to various sources such as Linux, Windows, Serverless, Network and stuff to collect Data/Metrics using different types of Beats )
+	-> Logstash ( Used to Filter and Transform the Data/Metrics to our requirements )
+		-> Data sharing from Logstash tp Elasticsearch happens through CRUD operations.
+	-> Elasticsearch ( Its kind of a Storage unit, In which we perform Search & Ranking )
+		-> We can use either Kibana or use API to directly connect Elasticsearch.
+	-> Kibana ( Dashboard which we can use to check and acces Metrics )
+	
+{{ NOTE - Observability -> Metrics + Logs + Traces }}
+
+
+	
+
+
+
+Obervability -> Metrics + Logs + Traces
+
+Monitoring -> Metrics + Alerts + Dashboard
+           -> Infrastructure: CPU usage, memory usage, disk I/O, network traffic.
+           -> Applications: Response times, error rates, throughput.
+           -> Databases: Query performance, connection pool usage, transaction rates.
+           -> Network: Latency, packet loss, bandwidth usage.
+           -> Security: Unauthorized access attempts, vulnerability scans, firewall logs.
+
+Collecting Metrics -> Is similar to "Nurse observing a patient every 30mins"
+                   -> Also know as "Scraping Metrics" 
+				   
+Prometheus server :
+
+Collecting metrics  -->  Storage  -->  HTTP
+ -> Pushgateway           -> TSDB       -> Alert manager - Slack, Email
+ -> Exporters                           -> Prometheus UI -> For Using PromQL
+ -> Service discovery                   -> Grafana
+ -> Node Exporters
+ -> mySQL Exporters
+ -> Custom metrics
+ -> Kube state metrics
+ 
+-> Exporters,etc which collects metrics are in a pod within the cluster
+
+-> clusterIP:port of an exporter /metrics 
+
+
+
+
+Custom metrics :
+-> 
+
+Instrumentation
+
