@@ -1,0 +1,648 @@
+
+Jenkins :::
+
+	- It is an popular Build Orchestration Tool
+		- Jenkins: {Code, build , artifacts, testing, deployment, monitoring}
+		
+	- It's Open source 
+	- It works on Master - Slave Architecture
+	- Azure Pipeline, AWS Code Pipeline, Bamboo, gitlab-ci are some other Orchestration tools
+		- Popularity, Extensive plugins, Open source - Jenkins excels other tools on these points.
+	
+	- It is an web application - 8080 is the default port on which Jenkins runs.
+	
+	- Jenkins has an Extensive list of plugins when compared to other tools
+	
+	1]	Master - Slave Architecture ::
+
+		Jenkins_Server - Master (VM)		==> Used to Create Jenkins Jobs/Project & Schedule the Jobs to SlaveNodes.
+			Jenkins_Slave_Node1	(VM)		==> Used to perform actual build - Java Applications Build 
+			Jenkins_Slave_Node2	(VM)		==> Used to perform actual build - Python Applications Build 
+			Jenkins_Slave_Node3	(VM)		==> Used to perform actual build - .Net Applications Build 
+			Jenkins_Slave_Node4	(VM)		==> Used to perform actual build - Angular/NodeJS Applications Build 
+				
+		Java Web Application ==> Build, and deployed to target env
+		
+		- Best practice is to have different servers for different build tools, having multiple tools on same server can cause performance issues.
+		- By having different node/server, when some issue occurs it affects only that specific servers.
+	
+		- Environments ::
+			
+			Non-Prod Environment												Production Environment 
+			
+				DEV 
+				QA 
+				UAT											===>					Prod
+			
+			Jenkins_Non_Prod Server												Jenkins_Prod Server
+			
+	2] Working With Jenkins ::
+
+		- Dev Team 		:: 	Developers are just consumers.
+		  DevOps Team 	::	DevOps Team are the owners of Jenkins Servers and its components.
+				
+		- DevOps Responsibilities ::                                                       *** CAN BE ADDED TO RESUME AS JENKINS HIGHLIGHTS ***
+		
+			- Installation & Configuration of Jenkins Servers 
+			- Plugin Management 
+			- User Management 
+			- Tools Management
+			- Access/Security Management
+			- Credential Management 
+			- Jenkins Master/Slave Node Configurations
+			- Onboard Applications to Jenkins 
+			- Create CICD Pipelines to automated builds and deployments 
+			- Troubleshooting the issues 
+			- Back-up & Recovery.
+
+		A]	Installation & Configuration of Jenkins Servers :: 
+				( Jenkins Installation done in master server only )
+				( Jenkins Installation requires Java, Since Jenkins made in Java )
+		
+				https://www.jenkins.io/doc/book/installing/
+		
+			- AWS EC2 Instances :: Pre-requirites
+			
+				Launch EC2 Instance - Ubuntu 20.04 ami 
+					- setup inbound rule 
+					- add port 8080
+			
+			- SSH connection (Putty,Mobaxterm)	- port 22
+			  Custom TCP (Jenkins) 				- port 8080
+				
+			- Install jdk :
+				sudo apt update -y 
+				sudo apt install openjdk-11-jre -y
+				java -version
+
+			- Install Jenkins :
+				sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
+					https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key           --> ( IO-Keys )
+				echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+					https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+					/etc/apt/sources.list.d/jenkins.list > /dev/null                   --> ( Repos )
+				sudo apt-get update -y 
+				sudo apt-get install jenkins -y
+
+			- Verification of Jenkins Installation :
+				jenkins --version 
+				systemctl status jenkins                                               --> ( Check Jenkins is Running or Not )
+			- Default Directory to check Jenkins
+				/var/lib/jenkins
+				ls
+				config.xml                                                             --> ( Maintains default properties of jenkins here )
+
+			- Post Installation Activities : 
+				Installing default plugins using GUI in Jenkins Web page
+				Jenkins URL during Instance Configuration                              --> ( We would give domain name or permanent URL in companies,
+                                                                                 			 In general use its not necessary) 
+			- <public_ip_Address>:8080                                                 --> ( Inorder to login to Jenkins Web page )
+				http://34.228.231.244:8080
+				
+			- GUI Interface :
+				- Manage Jenkins - Administrate Jobs
+					- System configuration
+						- System -> Jenkins basic configurations ( eg : No of Build Executors,etc )
+						- Plugins -> Activites on plugins -> Install plugins through URL
+														  -> Install by choosing file (downloaded else were)
+					- Security
+						- User 	-> Use to create and maintain users                                                           { "User Management" }
+								-> At Enterprise level we use LDAP plugins and connect LDAP server for maintaing Users
+								-> cd /var/lib/Jenkins/Users - Where Users get created Physically.
+						- Security	-> Providing acess to the User's and adding them to groups					              { "Security Mangement" }
+				- New item - New Jobs
+				- People
+				- Build history
+				- Build Executor status - Used to Identify Node (Workspace) and execute the jobs in the Node
+				                      - Used for running multiple jobs in parallel
+									  - Defaultly we can run 2 Jobs in parallel, which can be increased.
+									  - No of Build executors to run depands on system configurations (CPU,RAM,etc)
+									  - cd /var/lib/Jenkins/Jobs/Workspace - Where Jobs get executed.
+				- Build Queue - Maintains the jobs to be executed by Build Executor
+			
+	3] Jenkins Project Creation ::
+	
+		- Variables ::           																		(55:00)
+		
+			- Jenkins itself provides list of available variables within Job creation page
+			- Variable syntax is "${VARIABLE}"
+			
+			a] Environment Variables :
+					- They are Jenkins keywords used to maintain Jenkins environment and it's jobs	
+						(eg) : echo "jenkins-${JOB_NAME}-${BUILD_NUMBER}"
+			b] User Defined Variables :                                                                	(1:04:00 - 1:09:00)
+					- Declare any required variables related projects
+						(NOTE : We need to enable certain options)
+						(eg) : echo "User defined variable - ${envi}"
+		
+		- Jenkins Projects/Jobs ::
+		
+			a] Free-style Projects :																   	(33:00 - 55:00)
+				- It is based upon the manual configuration.
+				- Used to Download and Test plugins	( New / Upated versions )
+			b] Pipeline Projects :																		(1:12:00 - 1:28:00)
+				- It is based on the Scripts - groovy scripts
+				- It is composed of various stages
+					- Stage1 :
+						Pick the code from Source_Code Repo 
+					- Stage2 : 
+						Automate Build 
+					- Stage3 : 
+						Automate Unit Testing 
+				- Pipeline scripts is of 2 types :
+					- Scripted Pipelines	(Fully groovy and old way)	->	Start's with Node
+					- Declarative Pipelines								->	Start's with Pipeline
+					
+				-	(eg:)
+						pipeline {                                                  		(Type of script)
+							agent { label 'Slave1' }                                 		(Master or Node/Slave)
+
+							stages {                                                 		(Stages start)
+								stage('SCM Checkout') {                              		(Stage 1)
+									steps {                                          		(Steps to do within stages)
+										echo 'Hello World'
+									}
+								}
+								stage('Build') {									 		(Stage 2)
+									steps {
+										echo 'Hello World'
+									}
+								}
+								stage('Deploy to QA') {                               		(Stage 3)
+									steps {
+										echo 'Hello World'
+									}
+								}
+							}
+						}	
+
+
+	4] Remote repo for Loksai's Java project - https://github.com/LoksaiETA/Java-mvn-app2.git
+	
+
+	5] Jenkins Master/Slave Configurations ::
+			
+		a] Master - Slave Architecture ::
+
+			- Jenkins_Server - Master (VM)	==> Used to Create Jenkins Jobs/Project & Schedule the Jobs to SlaveNodes.
+									            Tools: git,jdk,jenkins
+			
+			- Jenkins_Slave_Node1	(VM)	==> Used to perform actual build - Java Applications Build 
+									            Tools: git, jdk, maven
+				
+				- Steps to establish connection between Master and Slave_Node
+					- Create User in Jenkins_Slave Node 
+					- Create SSH Keys
+				
+			- (e.g) Java Web Application :
+		
+				- Maven (Build tool) :
+					- Is a Build Tool
+					- Used to compile,create the artifacts.
+				
+					a] How Maven Works :
+						- POM.xml : (All Java projects to be build by maven need to have this, Its like Make file in C++)
+							It is used to define the dependencies and the plugins required to perform application build and testing.
+					
+					b] Maven Goals :
+						It is used to define the task to be performed -
+							clean 
+							test 
+							package - compile,testing and package creation.
+							install 
+							build 
+							
+					c] Maven Repository ::
+						It is a Global Repository 
+				
+
+
+
+
+				Configure Jenkins - Build Server 
+					Install - git, jdk, maven	
+					Valid user_name, Authentication - Key based auth.
+				
+				In Jenkins Master - Add Node Configuration
+
+					
+Java Maven Web Application ==> Project src code in github repo. 
+
+
+#Configure Slave Node1 for Java Maven App. :
+
+sudo -i
+
+apt update -y 
+
+Install Java ::
+
+sudo apt update -y 
+sudo apt install openjdk-11-jre -y
+java -version
+
+Install GIT :
+
+sudo apt install git -y
+
+Install Maven - Build Tool :
+https://maven.apache.org/install.html
+
+sudo apt install maven -y 
+
+
+Create User in Jenkins Slave Machine & Create SSH Keys 
+
+	SSH Keys --> is composed of public and private keys 
+
+
+#Add User : 
+
+
+
+useradd devopsadmin -s /bin/bash -m -d /home/devopsadmin
+
+adding user, enabling bash commands of that user, creating home directory for that user
+
+su - devopsadmin
+
+#ssh-keygen
+
+#for Ubuntu ::
+ssh-keygen -t rsa -b 4096 -m PEM
+
+
+ls ~/.ssh 
+
+#You should see following two files:
+
+#id_rsa - private key
+#id_rsa.pub - public
+
+
+cat id_rsa.pub > authorized_keys                   we need auth key inorder to access from remote server (master or other derver)                                (au..key name should be excatly same)          
+
+chown -R devopsadmin /home/devopsadmin/.ssh
+chmod 600 /home/devopsadmin/.ssh/authorized_keys
+chmod 700 /home/devopsadmin/.ssh                                        (change permisson so others dont mess this up)
+
+
+In Jenkins Master - Add Node Configuration
+		
+		Goto Manage Jenkins - Add New Node Configuration 2:11:00 - 2:22:00
+		
+		su - devopsadmin
+		2:25
+		
+		snippet generator
+		
+		private ip for configurations
+		
+		
+		tools-....
+		global config ..
+		
+			Deployment :::
+			
+				Target Server /  Hosted Server
+		Environments 
+		
+			DEV 
+			QA 
+			UAT
+			
+			PROD 
+			
+		In Target Servers :
+		
+			Web Application Server - Tomcat / Nginx 
+			
+			Configure the Target Server / QA Server ::
+			
+				Launch VM 
+				Install jdk, tomcat 
+				Start Tomcat Server - runs in port 8080(default port)
+				Valid user_name, Authentication - Key based auth.
+				
+				In Jenkins Master - install Publish over SSH Plugin. to copy the artifacts from slave1 to target server.
+				
+			Jenkins_Master 
+				Jenkins_Slave_Node1
+			Tomcat_Server
+			
+			
+######################Install TOMCAT Application Server on Ubuntu :::
+
+sudo -i
+
+sudo apt update -y 
+
+
+sudo apt install openjdk-11-jre -y 
+java -version
+
+#edit /etc/profile & add JAVA_HOME
+
+#/usr/lib/jvm/java-11-openjdk-amd64/
+
+vi /etc/profile
+
+java-11-openjdk-amd64
+
+
+export JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+PATH=$PATH:$HOME/bin:$JAVA_HOME/bin
+
+source /etc/profile
+
+Install Tomcat ::  https://tomcat.apache.org/download-80.cgi
+
+https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.96/bin/apache-tomcat-8.5.96.tar.gz
+
+https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.96/bin/apache-tomcat-8.5.96.tar.gz
+
+
+cd /opt
+wget https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.97/bin/apache-tomcat-8.5.97.tar.gz
+tar -xvzf /opt/apache-tomcat-8.5.97.tar.gz
+
+mv apache-tomcat-8.5.96 tomcat
+
+#Start Tomcat Server:
+#Goto:
+
+cd /opt/tomcat/bin
+./startup.sh
+
+###########################################
+
+#Add User : 
+
+
+
+useradd devopsadmin -s /bin/bash -m -d /home/devopsadmin
+
+su - devopsadmin
+
+#ssh-keygen
+
+#for Ubuntu ::
+ssh-keygen -t rsa -b 2048 -m PEM
+
+
+ls ~/.ssh 
+
+#You should see following two files:
+
+#id_rsa - private key
+#id_rsa.pub - public
+
+
+cat id_rsa.pub > authorized_keys
+
+chown -R devopsadmin /home/devopsadmin/.ssh
+chmod 600 /home/devopsadmin/.ssh/authorized_keys
+chmod 700 /home/devopsadmin/.ssh
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#make devopsadmin user as a owner to tomcat dir :
+
+exit ......
+
+chown -R devopsadmin /opt/tomcat
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Deployment ??
+
+	- copying the artifacts from source to target server 
+	
+		jenkins_Slave_Node1												==> 			Tomcat Server 
+		
+			target/mvn-hello-world.war									==>					/opt/tomcat/webapps/mvn-hello-world.war	
+			
+			
+			git branch: "${feature1}", url: 'https://github.com/LoksaiETA/Java-mvn-app2.git'
+					git branch: "${feature2}", url: 'https://github.com/LoksaiETA/Java-mvn-app2.git'
+					
+
+
+
+pipeline {
+    agent { label 'Slave1' }
+
+    stages {
+        stage('SCM Checkout') {
+            steps {
+                echo 'Perform SCM Checkout'
+				git 'https://github.com/LoksaiETA/Java-mvn-app2.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                echo 'Perform Maven Build'
+				sh "mvn -Dmaven.test.failure.ignore=true clean package"
+            }
+        }
+        stage('Deploy to QA') {
+            steps {
+				script {
+					sshPublisher(publishers: [sshPublisherDesc(configName: 'Tomcat_Server', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '.', remoteDirectorySDF: false, removePrefix: 'target/', sourceFiles: 'target/mvn-hello-world.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+				}
+
+            }
+        }
+    }
+}
+
+
+Automate the Builds and Deployments ::::
+
+			Jenkins Build Triggers :::
+			
+				Build Periodic 
+				
+					crontab :::  used to schedule the jobs.  https://crontab.guru/
+				
+				Poll SCM / Github Webhook 
+				
+Next :: 
+
+			Poll SCM / Github Webhook 
+			
+			Email Notifications 
+			
+			Ansible Module 
+
+#######################
+Day - 6 10th Dec. 2023 
+#######################
+
+
+
+
+
+
+
+SSH connections - learnings ?
+
+
+
+
+Automate the Builds and Deployments (Jenkins Build Triggers) :::
+	
+	1] Build Periodic																              (3:45:00)
+
+		- uses crontab 	-->  Used to schedule the jobs for specific time frame.
+		- This site is used to get crontab commands for specific time frames. (https://crontab.guru/)
+
+	2] Poll SCM / Github Webhook                                                                   
+	
+		- This is based on the Source Code Management (SCM) changes.
+		- Jenkins Master should have git installed.
+		- If required we can enable both at the same time.
+					
+		a] Poll SCM :           																	(15:00)
+					
+			- This will trigger the jobs based on the crontab only, If there is any changes happened in the source code repo.
+			- (e,g) : DEV --> src --> commit the changed to src_code repo. 
+						Test cycle --> 8AM 	12noon	3PM 
+
+		b] GIThub Webhook :         																(35:00)
+					
+			- This will trigger the jobs Whenever there is any change happened in the source code repo.
+			- This is not based on crontab
+			- Webhook need to be configured in git settings page
+				- Configuration stuffs : http://13.233.1.53:8080/github-webhook/
+	
+	
+	
+Email Notifications :::            43:00
+	
+	Notifications can be sent during ::: successful / failure / unstable
+			
+			
+			Gmail - 
+					Active account 
+					MFA 
+					App Password 
+						
+						Login to gmail account 
+						go to manage account
+						click on security tab 
+							create MFA 
+							create App Password
+								16 Bytes of token will be generated
+
+							
+			
+Email Notification Plugins :::
+
+SMTP Server :
+smtp.gmail.com
+
+SMTP Authentication
+
+SMTP Port :: 465
+
+Login to Gmail :::
+
+Click Account Settings
+
+select Security 
+
+MFA --> mobile#
+App Password = 16
+What ? window
+Which Appln - email
+
+
+pipeline {
+    agent { label 'slave1' }
+
+    stages {
+        stage('SCM Checkout') {
+            steps {
+                echo 'Perform SCM Checkout'
+				git 'https://github.com/LoksaiETA/Java-mvn-app2.git'
+            }
+              post {
+                failure {
+                  sh "echo 'Send mail on failure'"
+					mail bcc: 'loksaieta223@gmail.com', body: 'The Job Status', cc: 'loksaieta223@gmail.com', from: '', replyTo: '', subject: 'Jenkins Job Status', to: 'loksaieta223@gmail.com,loksaieta223@gmail.com,loksaieta223@gmail.com'
+                }
+              }
+        }
+        stage('Build') {
+            steps {
+                echo 'Perform Maven Build'
+				sh "mvn -Dmaven.test.failure.ignore=true clean package"
+            }
+              post {
+                success {
+                  sh "echo 'Send mail on success'"
+					mail bcc: 'loksaieta223@gmail.com', body: 'The Job Status', cc: 'loksaieta223@gmail.com', from: '', replyTo: '', subject: 'Jenkins Job Status', to: 'loksaieta223@gmail.com,loksaieta223@gmail.com,loksaieta223@gmail.com'
+                }
+                failure {
+                  sh "echo 'Send mail on failure'"
+					mail bcc: 'loksaieta223@gmail.com', body: 'The Job Status', cc: 'loksaieta223@gmail.com', from: '', replyTo: '', subject: 'Jenkins Job Status', to: 'loksaieta223@gmail.com,loksaieta223@gmail.com,loksaieta223@gmail.com'
+                }
+              }	
+        }
+		
+        stage('Deploy to QA') {
+            steps {
+				script {
+					sshPublisher(publishers: [sshPublisherDesc(configName: 'Tomcat_Server', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '.', remoteDirectorySDF: false, removePrefix: 'target/', sourceFiles: 'target/mvn-hello-world.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+				}
+
+            }
+        }
+    }
+}
+
+		
+pipeline {
+    agent { label 'slave1' }
+
+    stages {
+        stage('SCM Checkout') {
+            steps {
+                echo 'Perform SCM Checkout'
+				git 'https://github.com/LoksaiETA/Java-mvn-app2.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                echo 'Perform Maven Build'
+				sh "mvn -Dmaven.test.failure.ignore=true clean package"
+            }
+        }
+        stage('Deploy to QA') {
+            steps {
+				script {
+					sshPublisher(publishers: [sshPublisherDesc(configName: 'Tomcat_Server', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '.', remoteDirectorySDF: false, removePrefix: 'target/', sourceFiles: 'target/mvn-hello-world.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+				}
+
+            }
+        }
+        stage('Deploy to UAT') {
+            steps {
+				script {
+					sshPublisher(publishers: [sshPublisherDesc(configName: 'Tomcat_Server', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '.', remoteDirectorySDF: false, removePrefix: 'target/', sourceFiles: 'target/mvn-hello-world.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+				}
+
+            }
+        }
+        stage('Deploy to PROD') {
+            steps {
+				script {
+					sshPublisher(publishers: [sshPublisherDesc(configName: 'Tomcat_Server', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '.', remoteDirectorySDF: false, removePrefix: 'target/', sourceFiles: 'target/mvn-hello-world.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+				}
+
+            }
+        }
+    }
+}	
+
