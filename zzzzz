@@ -1,0 +1,363 @@
+
+
+Norstella - ?
+
+Project name - Citeline
+
+It is an Common DevOps project which handles multiple products such as pharma360 (medical/ecommerce), fusion (semiconductor), etc,.
+These products have microservices who's infrastructure, build and deployments are handled by us.
+I have mostly worked on pharma360 and fusion related microservices.
+In azure board, Each and every products have their own projects. And inside it we have a repo for each and every microservices.
+{{ In pharma360 product we have 20 such repos for microservices and codebase is typescript }}, Other projects have Java, Phython & C# as codebase.
+Usually, we have 2 pipelines in a repo, 1 for infrastructure building using terraform code and 1 for build & deploy of the code base.
+Usually, once a developer creates a repo and place their completed codebase and provide us the repo and raise a ticket to do the needful.
+In which we take a week for infrastructure terraform code and a week for pipelines creation and we test them. It usually takes 2-3 weeks for 
+a ticket to be closed in these tasks.
+We use templates in azure pipelines creation and modules in infrastructure terraform code creation.
+
+
+Deployment happens in ECS (Only Micro service deployment)
+
+ 
+---------------
+
+YAML :
+----
+
+YAML stands for Yaml Ain't Markup Language
+
+{{{ Markup language is something in which it's content is displayed or processed useing special symbols or tags.
+    (e.g): HTML
+    <h1>This is a heading.</h1>
+    <p>This is a paragraph.</p>
+    The <h1> tag tells the browser to display the text as a heading, and the <p> tag tells it to display the text as a paragraph.
+	
+	Serialization -> When data gets transferred from one system to another, it gets converted into binary and back from binary to data when it reaches its destination system (De-serializattion). During this process both the systems and the language in which data are written might change. Hence, it is agreed upon a common format for the data so it can be transferred smoothly. They are JSON, YAML, XML }}}
+	
+Where YAML is a Serialization language,
+
+-------------------------
+
+EFS how to mount to eks
+
+upgradeing eks
+
+--------------------
+
+
+cyber securty l1 position,
+
+-----------------------
+
+request, count, latency , http response monitoring
+
+type of monitoring
+
+ec2 - log dir
+
+flueint bit is only for kubernetes
+
+kms,eks,ec2,s3,iam,vpc
+
+------------------------
+
+Kubernetes - Notes, MindMajix IQ,
+
+rds, ACM, 53, CF,
+
+ API, s3, ecr, S3HOSTING, ECS, sct mng, vpc,  iam 
+ 
+ AWS - EC2, Autoscaling, LB., S3, IAM, VPC (NAT, VPC peering, transit gateway) , Cloudtrail, CloudWatch, RDS, Route53, CloudFront, WAf, Secret manager, EBS, EFS, ECS, 
+ 
+ linux -> Logs, root paths , volums - mount and stuff,commandsf, sar somtthing
+
+terraform -> debug mode
+
+------------------------------
+
+
+Hi,
+
+I hope this message finds you well. Regarding the Devops Engineer opportunity. With a solid background in AWS DevOps practices, continuous integration, and deployment, I am confident in my ability to contribute effectively to your team and help optimize your development processes.
+
+I bring total 3.5 years of IT industry experience in which 2.5 years of hands-on experience in DevOps roles.
+In my previous position at GlobalLogic, I successfully implemented and maintained CI/CD pipelines.
+I have a strong understanding of containerization technologies such as Docker and orchestration tools like Kubernetes, which I have utilized to streamline application deployment and scaling processes.
+
+My technical skills include scripting languages such as Python, Shell, and experience with infrastructure as code tools like Terraform.
+I am adept at configuration management tools like Ansible and have a comprehensive understanding of cloud platforms, particularly AWS.
+
+I look forward to the possibility of discussing how my qualifications align with your team's needs in greater detail. Thank you for considering my application.
+
+I’ve attached my resume for the position and would love to speak more about possible positions.
+
+----------------------------
+
+
+1] AWS Load Balancers :
+   ------------------
+   
+-> Load Balancers ?
+-> Different types -> Applicattion Load Balancers -> Load balancing at HTTP level 
+                                                  -> Webpages
+												  -> works OSI model layer 7 
+                   -> Network Load Balancers -> Load balancing at UDP and TCP level ( Sticky sessions & low latency)
+				                             -> Gaming applicaion,Video streaming
+											 -> works OSI model layer 4
+                   -> Gateway Load Balancers -> Load balancing with high security
+				                             -> For firewall related applicaions
+-> Target group needs to be created, before creating Load Balancers
+
+
+2] AWS Cloudtrail :
+   --------------
+
+-> Event logging & Event histroy -> Management Events
+                                 -> Data Events
+                                 -> Network Activity Events
+                                 -> Insights Events   								 
+-> Trails -> In Event histroy the logs stays for only 90 days, If we want to store it more than that in s3 we need to creae trail ( Fr what events )
+-> Cloudtrail Lake 
+-> Insights
+
+
+3] AWS Config :
+   ----------
+
+-> Rules
+-> Compilant & Non-Compilant
+-> Redediaion actions
+
+
+4] AWS WAF :
+   -------
+
+-> Web ACL -> While creating Web ACL (WAF), we need to assign it to an AWS resource (Mostly Load Balancers)
+-> IP Set 
+
+route53, cloud front distriburttion, api
+
+Secret Manangement on AWS :
+-------------------------
+
+1] Systems manager
+
+2] Secret manager
+
+3] Hasicorp vault
+
+
+
+
+AWS Cloudwatch :
+--------------
+
+1] Cloudwatch also known as Watchmen or Gatekeeper,
+   -> Monitoring
+   -> Alerting
+   -> Reporting
+   -> Logging
+   
+2] Cloudwatch performs following actions directly & indirectly,
+   -> 
+
+-------------------------------------
+
+
+OpeNgine :
+
+Terraform Issue faced :
+
+1]
+Error: Error creating launch configuration: UnsupportedOperation: The Launch Configuration creation operation is not available in your account. Use launch templates to create configuration templates for your Auto Scaling groups.
+        status code: 400, request id: c7cd59ff-58ba-4a89-a106-d589b73aabda
+-> Issue resolved once aws launch configuration is replaced with aws launch template in ec2.tf file
+
+2]
+Error: InvalidUserData.Malformed: Invalid BASE64 encoding of user data.
+        status code: 400, request id: dca50ab5-3fe7-4b47-9fd8-c7fdd2a9d660
+-> Issue resolved once we use base64encode() function to wrap the user_data section within launch_template
+
+
+Citeline
+
+Caerus US 1, Inc Issue faced :
+
+1] 
+Issue : Ticket requirement was to increase the CIDR range from low to some higher values, During its migration from old to new VPC (Old VPC and
+its components are destroyed and new VPC and components are created), few data's in DynamoDB and Secret's manager was lost. 
+-> The DynamoDB's PITR (Point In Time Recovery) was enabled, Hence the data in old DB was restored/recovered into new DB in new VPC.
+-> The main Issue was that, there was no Terraform plan in the pipeline with manual approval, Hence respective personals didn't know
+what was destroyed and re-created. 
+-> Its seems the project personals created few manual resource activities, Like creating variables in Secret manager on their own,
+without adding it through Terraform code, Hence those were lost. 
+
+-------------------------------------
+
+ANSIBLE :
+-------
+
+1] What is Ansible ?
+
+Ansible is an open source IT automation engine that automates
+provisioning
+configuration management
+application deployment
+orchestration
+and many other IT processes. It is free to use, and the project benefits from the experience and intelligence of its thousands of contributors.
+
+2] How Ansible works ?
+
+Ansible is agentless in nature, which means you don't need install any software on the manage nodes.
+For automating Linux and Windows, Ansible connects to managed nodes and pushes out small programs—called Ansible modules—to them. These programs are written to be resource models of the desired state of the system. Ansible then executes these modules (over SSH by default), and removes them when finished. These modules are designed to be idempotent when possible, so that they only make changes to a system when necessary.
+For automating network devices and other IT appliances where modules cannot be executed, Ansible runs on the control node. Since Ansible is agentless, it can still communicate with devices without requiring an application or service to be installed on the managed nodes.
+
+------------------------------------------
+
+
+
+Cloud Formation Templates (CFT) :
+-------------------------------
+
+AWS CLI -> Used for short actions such as listing s3 buckets,etc
+AWS CFT -> Used for creating AWS resources using templates
+
+Templates must be -> Declarative
+                  -> Versioned
+				  
+CFT Features -> Drift Detection -> Check for changes in templates and revert back if needed.  *****
+             -> Stacks -> Uses the submitted templates to convert it into api calls for aws.
+			 
+Creation of Cloud Formation Templates -> Through GUI -> Using Infrastructure composer
+                                      -> Through CLI -> Visual studio code -> with YAML Extension & AWS Toolkit Extension
+									  
+Cloud Formation Templates usually contain :
+	-> Version
+	-> Meta data
+	-> Description
+	-> Parameters
+	-> Rules & Mapping conditions
+	-> Resources  *****
+		-> Type
+		-> Size , etc,...
+
+
+1] Cloud formation best practices ?
+2] Nested stack ?
+3] Stack policies ?
+4] AutoScalingRollingUpdate policy ?
+
+-------------------------------------
+
+AWS Application Migration Service (AWS MGN) :
+
+-> It can be used for Re-Hosting (Lift-Shift Migration) and Re-Platforming.
+
+-> Step-1 - Initialization
+			-> IAM Roles (7) created
+   Step-2 - Replicaion
+   
+-> Migration happens wave by wave
+
+-> TCP 443 (MGN comunication), TCP 1500 (Encrypted data) during replication process
+
+------------------------------------
+
+pipeline {
+    agent any
+    environment {
+        AWS_ACCOUNT_ID = '022499043090'
+        SNS_TOPIC_NAME = 'JenkinsNinja'
+		AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        AWS_DEFAULT_REGION = "us-west-1"
+    }
+	stages {
+        /*stage('Checkout') {
+            steps {
+                checkout scmGit(branches: [[name: '*//*main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/gunjan-balpande/Jenkins_Ninjas.git']])
+            }
+        }
+        
+		stage('SonarQube analysis') {
+            steps {
+                withSonarQubeEnv('Sonarqube') {
+                    script {
+                        def scannerHome = tool 'SonarQubeScanner-6.1.0'
+                        bat "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=Jenkins_Ninjas -Dsonar.sources=."
+                    }
+                }
+            }
+        }*/
+        stage('Initializing Terraform'){
+            steps{
+                script{
+                    dir('terraform'){
+                        bat 'terraform init'
+                    }
+                }
+            }
+        }
+        stage('Formatting Terraform Code'){
+            steps{
+                script{
+                    dir('terraform'){
+                        bat 'terraform fmt'
+                    }
+                }
+            }
+        }
+        stage('Validating Terraform'){
+            steps{
+                script{
+                    dir('terraform'){
+                        bat 'terraform validate'
+                    }
+                }
+            }
+        }
+        stage('Previewing the Infra using Terraform'){
+            steps{
+                script{
+                    dir('terraform'){
+                        bat 'terraform plan'
+                    }
+                }
+            }
+        }
+        stage('Creating AWS Infrastructure'){
+            steps{
+                script{               
+                    dir('terraform') {
+                        bat "terraform apply --auto-approve"
+                    }
+                }
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                def jobStatus = currentBuild.currentResult
+                def subject = "Jenkins Job '${env.JOB_NAME}' - Build #${env.BUILD_NUMBER} - ${jobStatus}"
+                def body = """
+                    Job: ${env.JOB_NAME}
+                    Build Number: ${env.BUILD_NUMBER}
+                    Status: ${jobStatus}
+                    
+                    Check console output at ${env.BUILD_URL} for more details.
+                """
+                    snsPublish(
+                        topicArn: "arn:aws:sns:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:${SNS_TOPIC_NAME}",
+                        subject: subject,
+                        message: body
+                    )
+                }
+            }
+        }
+    }
+
+--------------------------------------------
+
+
+
