@@ -1,0 +1,721 @@
+
+
+1:17:00 -> Start
+
+
+
+Configuration Management Tool - Ansible :::	
+
+
+	- Infra-Structure Management Team :
+		
+		- Provision the Infra-Structure 		--> Terraform/Cloudformation/ARM  
+			Creating the required servers/Environments 
+				
+		- Configure the Infra-Structure			--> Ansible/Chef/Puppet 
+			Installing/Managing all the required tools/package/services in the Infra-Structure
+
+	- Ansible is one of the IAC Tools --> Infra-Structure As Code.
+			
+	- Install security patches in all the servers once in 15 days.                      (Usecase of Ansible)
+				
+	- Ansible Architecture :
+	
+		Ansible uses Push Mechanism to perform any task in target node.
+	
+	- Ansible Components ::
+		
+		a] Inventory / Hosts
+		b] Modules 
+		c] ansible.config 
+		d] Ansible Playbook / Adhoc Commands 
+		e] Ansible engine / Controller / Master
+		f] Ansible node / Slave
+		g] Roles
+	
+	- Why Ansible ?                  (Make use of Word docu in video)
+		
+		- Simple (Compared to othe IAC tools its simple and most preferred)
+		- Powerful
+		- Agentless
+
+		Use cases :
+			
+			- Provisioning server (Configuring servers)
+			- Configuration management (Configuring tools,packages)
+			- Continuous delivery
+			- Application deployment
+			- Security compliance
+
+
+
+	- Working with Ansible ::
+			
+		- Inorder to install Ansible we need "python" in both Master and target nodes (AWS EC2 instances have phython defaultly)
+		
+Linux's default authentication in key value auhenticaion, but there are more...					
+						
+						
+	- Ansible Installation & Configurations ::                                                                  	(2:15:00)
+	
+		Launch 3 EC2 Instances... 1 for Ansible Controller/Master & 2 as Nodes - ubuntu
+
+		SSH connections :::
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#Login to Ansible Node1 & Node2. Perform below activities:
+
+#Add User in Ansible Nodes : 
+
+sudo -i
+
+apt update -y 
+
+useradd ansibleadmin -s /bin/bash -m -d /home/ansibleadmin 
+
+passwd ansibleadmin                          --> Ansible_Node1, Ansible_Node2
+
+
+#Enter New Password:
+#Confirm Password:
+
+#Goto:
+
+vi /etc/ssh/sshd_config
+
+#Enable Password Authentication to Yes and save the file
+#Execute Below command to update the changes.
+
+service sshd reload                 (Since, sys config file we made change we need to reload for it to take effective)    
+
+su - ansibleadmin
+
+ls -a                              
+
+#As a "root user" edit below file:
+
+exit
+
+$ visudo
+
+#add the below mentioned line in the file and save it.
+ 
+ansibleadmin ALL=(ALL) NOPASSWD: ALL
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#Login to Ansible Controller:
+https://docs.ansible.com/ansible/latest/installation_guide/installation_distros.html
+
+sudo -i
+
+sudo apt update -y
+
+sudo apt install software-properties-common -y
+
+sudo add-apt-repository --yes --update ppa:ansible/ansible
+
+sudo apt update -y
+
+sudo apt install ansible -y
+
+ansible --version
+
+#go to /etc/ansible
+
+#host - inventory file
+#config (ansible.cfg) - default properties of ansible
+#roles - manage ansible components
+
+#Add User in Ansible Controller : 
+
+useradd devopsadmin -s /bin/bash -m -d /home/devopsadmin
+
+#useradd devopsadmin
+
+su - devopsadmin	
+
+ssh-keygen -t rsa -b 1024 -m PEM
+
+
+we have to make sure communication bettwn master and node (ssh) is secure connections
+
+before ansible iac is achieved through shell scripting but it was complex
+
+In jenkins key on slave shared to master, since both owned by devops team
+
+in ansible key generted in master shared to target nodes (for security reasons)
+
+
+
+ssh-copy-id ansibleadmin@172.31.30.42  --> for                     
+
+(private ip fr key generations, so it wont change)
+
+ssh-copy-id ansibleadmin@172.31.29.115
+
+--> autho key generted in nodes1,2 (secure connection have been made)
+
+
+
+--> followinf commans used to connect to node1,2 frm master/controler
+ssh ansibleadmin@172.31.30.42
+ssh ansibleadmin@172.31.29.115
+
+--> these seems to be linux concepts zzzzzzz....
+
+chown -R devopsadmin:devopsadmin /etc/ansible      ==> power given to devopsadmin (run as root user)
+
+
+
+
+
+
+2:46:00
+
+working starts -->
+
+
+
+		Using Ansible we are gng to handle the ansible nodes.
+		
+			1] Create Inventory :
+			
+				- hosts is default inventory file
+				- dont leave unwanted spaces
+				
+				###update vi etc/ansible/host
+
+[testnodes]
+samplenode1 ansible_ssh_host=172.31.30.42 ansible_ssh_user=ansibleadmin
+samplenode2 ansible_ssh_host=172.31.29.115 ansible_ssh_user=ansibleadmin
+
+
+				
+			2]	Ansible Adhoc Commands 
+					- used to execute specific command/task   (task represents module frm 4])
+					
+					(eg)	apt install git -y 
+					
+					#hosts file is the default Inventory file for ansible 
+#**************************************************************************************************************************
+#Access thru Ansible Controller :
+#**************************************************************************************************************************
+
+syntax :
+
+ansible <hosts_name> -m <module_name> -i <inventory_file>
+
+
+1]	ansible testnodes -m ping 
+ 
+ansible samplenode2 -m ping
+
+ansible all -m ping
+
+#host machines can be identified using :                       important ****
+#all | group_name | individual_host_name
+                       
+
+2]	ansible dev_server_grp1 -m ping -i dev_servers  (same dir)
+
+ansible devnodes -m ping -i /etc/ansible/dev_inventory  (different dir)
+
+hosts is default inventory file, if we need to execute other inventory fies we neeed to specify them with -i option
+
+-a 7option for adding arguments with -m module commands
+
+
+###update vi /etc/ansible/host
+
+[testnodes]
+samplenode1 ansible_ssh_host=172.31.41.32 ansible_ssh_user=ansibleadmin
+samplenode2 ansible_ssh_host=172.31.39.17 ansible_ssh_user=ansibleadmin
+
+
+/etc/ansible/dev_inventory
+
+[devnodes]
+sampledevnode1 ansible_ssh_host=172.31.41.32 ansible_ssh_user=ansibleadmin
+sampledevnode2 ansible_ssh_host=172.31.39.17 ansible_ssh_user=ansibleadmin
+
+ansible devnodes -m ping -i /etc/ansible/dev_inventory
+					
+			3]	Ansible Playbooks 				
+				- used to execute some series of commands/tasks  
+				- here, we need 2 commands, so adhoc cant be used
+				
+					(eg)	apt install jdk 
+							apt maven -y 
+						
+			4] Ansible Modules :		
+						- are the predefined scripts used to perform some task.
+						
+						
+ansible samplenode2 -m ping
+
+ansible samplenode1 -m shell -a "sleep 5 ; echo 'hi'"
+
+when 1st module is runned through ansible command .ansible/tmp directory is created, in which the module/scrpit to run is pushed, we in turn gets runned in target node.
+
+						
+
+
+
+
+
+
+
+#**************************************************************************************************************************
+#Access thru Ansible Controller :
+#**************************************************************************************************************************
+Ansible Modules: Eg.: 
+ansible testnodes -m ping
+
+ansible all -m ping ### will ping all hosts from /etc/ansible/hosts file
+
+ansible samplenode1 -m ping
+ansible samplenode2 -m ping
+
+#or using user defined Inventory file
+#ansible ansible-node1 -m ping -i myinventoryfile.txt
+
+
+ansible samplenode1 -m ping -i myinventoryfile.txt
+
+#**************************************************************************************************************************
+
+ansible samplenode2 -m ping
+
+ansible samplenode1 -m shell -a "sleep 5 ; echo 'hi'"
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+important ******
+Ansible Facts!
+
+ansible samplenode1 -m setup
+ansible samplenode1 -m setup -a "filter=ansible_mounts"
+
+*** By using ansible setup module, we get ansible facts(complete info on hardware details, software details of target node)
+
+
+
+
+
+##Transfer a file from Ansible Controller to Nodes using copy Module
+
+ansible samplenode1 -m copy -a "src=/etc/ansible/file1.txt dest=/home/ansibleadmin"
+
+ansible samplenode1 -m copy -a "src=/etc/ansible/s1.txt dest=/home/ansibleadmin backup=yes"
+
+with backup=yes option we can take that file's backup in target node
+
+##Transfer a file from Ansible Nodes to Ansible Controller using fetch Module note ******
+
+ansible samplenode1 -m fetch -a "src=/home/ansibleadmin/filefrom_AN1.txt dest=/home/devopsadmin"
+
+
+
+
+
+
+ansible-doc -l  ==> command gets us info on all other ansible commands
+
+### List all modules:
+ansible-doc -l
+### No. of modules:
+ansible-doc -l | wc -l
+### Search for specific modules:
+ansible-doc -l | grep shel
+### To know about any specific modules:
+ansible-doc shell
+
+
+
+
+
+
+
+
+
+
+
+
+Ansible Playbooks ::
+
+
+*.yaml scripts 		==> Key-value pair
+
+- Playbook creation
+
+UseCase 1 :
+	- Deploy an artifact *.war from Jenkins Slave Machine to QA-Server.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+### List all modules:
+ansible-doc -l
+### No. of modules:
+ansible-doc -l | wc -l
+### Search for specific modules:
+ansible-doc -l | grep shel
+### To know about any specific modules:
+ansible-doc shell
+
+
+#**************************************************************************************************************************
+#Ansible Variables !
+#shell : echo $var1 
+
+in yaml : "{{var1}}"
+
+
+ansible samplenode1 -m setup
+
+
+key:Value pair 
+
+#debugmod.yaml
+
+
+
+
+
+Ansible Playbooks ::
+
+	- Ansible Adhoc 		--> Just to execute a specific Task / Module 
+	- Ansible Playbooks  	--> Playbooks are written using yaml script - used to execute the series of ansible tasks/Modules.
+							Playbook should be reusable!
+							
+	- debugmod.yaml	(Filename/Playbook name can be any but extension to be saved as .yaml only)
+	- yaml file is (Key : Value) pair kindof file
+
+	- (e.g):
+
+		---																	(By coding standards Playbook start with ---. But it is not mandotary)
+		 - hosts: testnodes													(In host we give the node on which it suppose to run)
+		   tasks:															(In task we give the modules which we need to run)
+		   - debug:  														(NOTE: Here, - represents sub key of the above key (same family))  zzzzzzz
+			  msg:														(debug is the module used here, msg (& pair) is the argument used within debug module)
+			   - "The os distribution is: {{ansible_distribution}}" 		(ansible_distribution, ansible_system, etc... are ansible environment variables)
+			   - "THe os name is: {{ansible_system}}"						(variable's are declared within - {{}} and msg within - "" )
+			   - "The os family is: {{ansible_os_family}}"					(.yaml file need to have innuttation (space and stuff for aligning))
+			   - "THe mount points are :{{ansible_mounts}}"  				(.yaml file ends here)
+
+
+		- Execute as :
+			ansible-playbook debugmod.yaml 
+			
+		- ansible samplenode1 -m setup 		--> Give's lot of info pointing with Ansible variables, we use such varibles in above .yaml file
+			
+	- Use Visual studio to write scripts (It has auto correction)
+	
+	- When running playbooks ansible 1st runs -m setup to get all info, then from which the required variables are sorted.
+	
+	- Variables :
+		a] Pre-Defined Variables
+		b] User-Defined Variables 
+		
+		- (e.g) : test_var-datatype.yaml
+		
+			---
+			 - hosts: samplenode1
+			   vars:														(vars: --> This key is used to declare User-Defined variables)
+				x: 23
+				my_num: 45.67
+				my_name: Loksai
+				my_b: YES   
+			   tasks:
+			   - debug:
+				  msg:
+				   - "The value of x is: {{x}} and type: {{x|type_debug}}"						(after | type_debug is phyton variable)
+				   - "THe value of my_num: {{my_num}} and type : {{my_num|type_debug}}"
+				   - "The value of my_name : {{my_name}} and type: {{my_name|type_debug}}"
+				   - "THe value of my_b is: {{my_b}} and type : {{my_b|type_debug}}"
+		
+		- (e.g) : test_var-datatype1.yaml
+		
+		/etc/ansible/variables/myvarfile1.yaml
+																			(As the best partice it is best to maintain seperate file for variables)
+		vi myvarfile1.yaml
+		
+		x: 23
+		my_num: 45.67
+		my_name: Loksai_ETA
+		my_b: YES
+
+
+		---
+		 - hosts: samplenode1
+		   vars_files:														(This key is for path of variable files)
+			 - /etc/ansible/variables/myvarfile1.yaml
+		   tasks:
+		   - debug:
+			  msg:
+			   - "The value of x is: {{x}} and type: {{x|type_debug}}"
+			   - "THe value of my_num: {{my_num}} and type : {{my_num|type_debug}}"
+			   - "The value of my_name : {{my_name}} and type: {{my_name|type_debug}}"
+			   - "THe value of my_b is: {{my_b}} and type : {{my_b|type_debug}}"
+
+
+		ansible-playbook test_var-datatype1.yaml
+		
+		- (e.g) : test_bypassfacts.yaml
+		
+		---
+		 - hosts: samplenode1
+		   gather_facts: false												(setup module is the default module, by default it will be true,
+		   become: yes														 In order to by-pass default module/setup we set "gather_facts as false")
+		   tasks:
+		   - name: Manage git tool
+             apt:															(apt (module name) used when running ubuntu machines,)
+               name: git													 where as, yum is used in centos/rhel machines)
+               state: present
+
+
+		ansible-playbook test_bypassfacts.yaml
+		
+		
+		- become:yes 		--> This parameter represents root user access, any install & upgradation requires become parameter.
+		- name: <>			--> This is a simple name parameter to give names for identifications.
+		- state: present	--> This parameter represents installation as present/absent/latest = install/uninstall/upgrade
+								(e.g): state: present  ->  sudo apt install git 
+		- ubuntu -- apt 
+		  centos/rhel -- yum
+		  
+		- (e.g) : install3.yaml
+		
+		---
+		 - hosts: "{{ host_name }}"
+		   become: yes
+		   tasks:
+		   - name: Manage "{{ tool_name }}" service
+			 apt:
+			   name: "{{ tool_name }}"
+			   state: "{{ tool_state }}"
+
+
+		ansible-playbook var3.yaml -e "host_name=samplenode1 tool_name=git tool_state=present"
+		
+		- -e option			--> It used to give parameter options run-time.
+
+	- Handling Variables ::	
+	
+		--> Hardcoding the variables 	--> vars:
+		--> Using Variables files    	--> vars_files: 
+		--> Passing Extra values     	--> -e 
+
+		-->	How to jus verify playbook syntax	:	ansible-playbook testfile.yaml --syntax-check
+
+	- Registers ::
+ 
+		- (e.g) : test_var-datatype.yaml
+		
+			---
+			 - hosts: samplenode1
+			   gather_facts: false
+			   tasks:
+			   - shell: "bash --version"		(The shell module is used fr running shell commands, but it doesn't store the results)
+
+
+		- (e.g) : test_var-datatype.yaml
+
+			---
+			 - hosts: samplenode1
+			   tasks:
+			   - shell: "bash --version"
+				 register: bash_ver				(register module is used inorder to store output of shell module, here)
+			   - debug: var=bash_ver			(debug module is used to print the content in register module's variable)
+			   			   
+	- Handlers :: 
+	
+		--> They are used to control the flow of playbook execution, based on the presence of previous modules
+			This can be done using notify key. (More like if else condition to check the presence of pre-requirites)
+
+			Handlers are same as tasks.
+
+		- (e.g) :
+
+			---
+			  - hosts: samplenode1
+				#gather_facts: false
+				become: yes
+				tasks:
+				  - name: Install-httpd
+					yum:
+					  name: httpd
+					  state: present
+					notify:
+					- start-httpd
+				handlers:
+				- name: start-httpd
+				  service:
+					  name: httpd
+					  state: started
+					  
+		Here, name : start-httpd is under handlers module, which means it runs only when notify module gives yes (this happens only when yum module
+		sucessfully installs httpd). Therefore they act as if else condition.
+		
+		- yum/apt ==> state :	represents 	 present/absent/latest 
+		- service ==> state : 	represents	 started/stopped/restarted
+
+		- (e.g) :
+		
+			---
+			  - hosts: samplenode1
+				#gather_facts: false
+				become: yes
+				tasks:
+				  - name: Install-httpd
+					yum:
+					  name: httpd
+					  state: present
+					notify:
+					- start-httpd
+				  - name: Install-nginx
+					yum:
+					  name: nginx 
+					  state: present
+					notify:
+					- start-nginx
+				handlers:
+				- name: start-httpd
+				  service:
+					  name: httpd
+					  state: started
+				- name: start-nginx
+				  service:
+					  name: nginx
+					  state: started
+					  
+	- Using When Condition :::
+	
+		- (e.g) :
+
+			---
+			  - hosts: testnodes
+				#gather_facts: false
+				become: yes
+				tasks:
+				  - name: Install-nginx on Debian
+					apt:
+					  name: nginx
+					  state: "{{pkg_state}}"
+					when: ansible_os_family == "Debian"
+				  - name: Install-nginx on Redhat
+					yum:
+					  name: nginx
+					  state: "{{pkg_state}}"
+					when: ansible_os_family == "RedHat"
+			
+		when module is used to check the condition and execute the above module.
+		Here, when the when module satisfies ansible_os_family as Debian is executes apt module and likewise for RedHat.
+		
+	- Loops :
+	
+		- (e.g) :
+
+			---
+			  - hosts: samplenode1
+				become: yes
+				tasks:
+				  - apt:
+					 name: git
+					 state: present
+				  - apt:
+					 name: tree
+					 state: present
+				  - apt:
+					 name: vim
+					 state: present
+					 
+		In the above eg we have 3 seperate tasks to install 3 tools. But, using Loop we can use one task for install all three tools (we use iteam keyword),
+		Check below eg.
+
+		- (e.g) :
+		
+			---
+			  - hosts: samplenode1
+				gather_facts: false
+				become: yes
+				tasks:
+				  - apt:
+					 name: "{{item}}"
+					 state: present
+					loop:
+					  - git
+					  - nginx
+					  - tree
+					  
+	- #register_set_facts.yaml			zzzzzzz
+	
+		---
+		 - hosts: samplenode1
+		   tasks:
+		   - shell: "bash --version"
+			 register: bash_ver
+		   - set_fact:
+			  bash_version: "{{bash_ver.stdout.split('\n')[0].split()[3]}}"
+			  my_value: "bash version"
+		   - debug: var=bash_version
+   
+
+	- Ansible Roles ::									(1:20:00 - 1:40:00 -> Slides)*****
+
+		- Ansible Roles are used to organize the Ansible Components, To reuse & Share.
+		
+		- Roles are more like task, we give certain role in playbook, it inturn goes to that roles and trigger all sub directories in them.
+		
+		- ansible-galaxy init sql 	--> used to create role and its representative directories (within roles directory).
+
+		- Understand the structure of Ansible Components ::::
+			playbooks, handlers, loop, variable, defaults, tasks,
+			
+		- link : galaxy.ansible.com  --> roles
+		
+		- (e.g) : Working with Handlers using Ansible Roles :
+		
+			---
+			- hosts: {{host_name}}
+			  become: yes
+			  roles:
+				- role: {{role_name}}
+		
+			---
+			- hosts: samplenode1
+			  become: yes
+			  roles:
+				- role: testrole1
+
+			---
+			# tasks file for testrole1
+				  - name: Install-nginx
+					apt:
+					  name: nginx
+					  state: present
+					notify:
+					- start-nginx
+
+			---
+			# handlers file for testrole1
+				- name: start-nginx
+				  service:
+					  name: nginx
+					  state: started
+			
+		
+	- Summary :
+
+			Install & Setup the Ansible Controller and Target Nodes
+			Modules 
+			Inventory files
+			Adhoc Commands 
+			Playbook Variables Handling 
+			Roles 
+				handlers 
+				vars 
+				tasks 
+			
