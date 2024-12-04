@@ -1,0 +1,236 @@
+ 
+Assignment Questions :
+--------------------
+
+GIT :
+---
+1]	What is the main purpose of using GIT ?
+
+	To create documents
+->	To track changes in source code during software development
+	To compile code
+	To manage databases
+ 
+2]	Which of the following is a distributed version control system ?
+
+	Subversion
+	Mercurial
+	CVS
+->	GIT
+ 
+ 
+3] 	GitLab is primarily known for which of the following functions ?
+
+	Integrated development environment (IDE)
+->	Version control and continuous integration
+	Text editing
+	Data analysis
+ 
+4]	One key feature of GitLab is its capability for :
+
+	Cloud storage
+->	Continuous integration/continuous deployment (CI/CD)
+	Graphic design
+	Email hosting
+ 
+5]	What does the command git init do ?
+
+	Creates a new branch
+->	Initializes a new GIT repository
+	Adds a file to the staging area
+	Commits changes to the repository
+
+6] 	What is typically contained in a ReadMe file in a GIT repository ?
+
+	Detailed source code
+->	Documentation and instructions about the project
+	Binary files
+	User passwords
+
+7] 	What command is used to add a remote repository in GIT ?
+
+	git add remote
+	git connect remote
+->	git remote add
+	git link remote
+ 
+8] 	Which command is used to upload local repository content to a remote repository ?
+
+	git upload
+->	git push
+	git send
+	git post
+ 
+9] 	What does the command git commit -m "message" do ?
+
+->	Commits changes with a specified commit message
+	Creates a new branch with the name "message"
+	Deletes a commit
+	Merges branches with the specified commit message
+
+10]	Which command is used to create a new branch in GIT ?
+
+	git branch new
+	git create branch
+	git new branch
+->	git branch
+
+
+EC2 :
+---
+1]	A user accidentally deletes their private key file used to access an EC2 instance. What is the recommended course of action ?
+
+->	Create a new key pair and replace the existing one on the instance
+	Recreate the private key file from the AWS Management Console
+	Generate a new public key from the private key
+	Use a different key pair to access the instance
+
+2]	A developer needs to securely access their EC2 instance using SSH. What must they configure to establish a secure connection ?
+
+	Security Groups
+->	Key Pairs
+	Elastic IP
+	IAM Roles
+	
+3]	A business wants to ensure that their application can handle sudden spikes in traffic.
+	Which EC2 feature allows for automatically adjusting the number of instances based on demand ?
+
+->	EC2 Auto Scaling
+	Elastic IP
+	EC2 Instances
+	Security Groups
+	
+4] 	A company needs instances with high memory for running in-memory databases. Which EC2 instance type is best suited for this requirement ?
+
+	General Purpose (t2.micro)
+	Compute Optimized (c5.large)
+->	Memory Optimized (r5.large)
+	Storage Optimized (i3.large)
+	
+5]	A developer needs to deploy an application globally with low latency. Which EC2 feature can help achieve this by launching instances in different geographical locations?  
+
+	Availability Zones
+->	Regions
+	Edge Locations
+	Local Zones
+
+
+Linux Shell Scripting :
+--------------------- 
+1]	Which command is used in a shell script to run a script or command in the background in an EC2 instance ?
+
+->	&
+	nohup
+	bg
+	fg
+
+2]	In an EC2 instance, which command in a shell script can be used to check if a specific directory exists ?
+
+	if [ -f /path/to/dir ]
+->	if [ -d /path/to/dir ]
+	if [ -e /path/to/dir ]
+	if [ -s /path/to/dir ]
+ 
+3]	Which of the following is the correct syntax to pass an argument to a shell script ?
+
+	./script.sh arg1
+	sh script.sh arg1
+	script.sh --arg1
+->	Both A and B
+
+4]	When automating the configuration of an EC2 instance using a shell script, which tool is commonly used to manage and maintain services ?
+
+	init
+	cron
+->	systemctl
+	service
+
+5]	Which command would you use in a shell script to securely connect to another EC2 instance from your current instance ?
+
+	scp
+	rsync
+->	ssh
+	ftp	
+
+
+S3 :
+--
+1]	A business is dealing with high costs and complex management of their on-premises storage.
+	What is a key reason they should consider more efficient storage solutions ?  
+
+	To increase physical security
+-> 	To streamline storage management and reduce costs
+	To enhance data encryption
+	To support additional hardware installations
+
+2]	A user needs to automatically delete objects in S3 that have been stored for more than 1 year. What feature should they configure ?  
+
+	Amazon EBS Snapshots
+	S3 Object Lock
+->	S3 Lifecycle Policy
+	S3 Event Notifications
+ 
+3]	A user wants to store and manage large amounts of data that can be accessed frequently. Which AWS storage service is designed for this purpose ?  
+
+	Amazon Glacier
+	Amazon EBS
+->	Amazon S3
+	Amazon EFS
+ 
+4]	A company wants to ensure efficient cost management and data lifecycle control for their cloud storage.
+	What is a best practice for managing cloud storage effectively ?  
+
+	Using a single storage tier for all data types
+->	Implementing data lifecycle policies and monitoring usage 
+	Regularly migrating data to on-premises storage
+	Avoiding the use of automated backup solutions
+ 
+5]	A company is experiencing slow application performance due to high storage latency. Why is it important to invest in efficient storage solutions ?  
+
+	To reduce capital expenditures
+->	To improve application performance and user experience
+	To simplify compliance reporting
+	To enhance network bandwidth
+ 
+6]	For data that needs to be archived with minimal cost and infrequent access, which AWS storage service should be used ?  
+
+	Amazon S3 Standard
+	Amazon EBS
+->	Amazon Glacier
+	Amazon S3 Intelligent-Tiering
+ 
+7]	A company faces challenges with high costs and scalability limits due to its current storage system.
+	What is a common disadvantage of traditional storage systems ?
+
+	Low availability of storage
+->	High upfront capital expenses and limited scalability
+	Complex integration with cloud services
+	Inadequate security features
+ 
+8]	A company needs a scalable block storage solution for their EC2 instances. Which AWS storage service should they use ?  
+
+	Amazon S3
+	Amazon Glacier
+->	Amazon EBS
+	Amazon EFS
+ 
+9]	An enterprise is concerned about data recovery speed. Why is efficient storage important for ensuring quick data recovery ?
+
+	It allows for more frequent backups
+->	It enables faster retrieval and access to data during recovery
+	It provides more storage capacity
+	It simplifies data encryption
+ 
+10]	An organization is experiencing difficulty in managing data growth efficiently with their existing storage system.
+	What is a primary disadvantage of traditional storage systems in this context?  
+
+	Low data redundancy
+->	High cost and complex management of scaling storage
+	Incompatibility with backup solutions
+	Limited network throughput
+	
+
+
+	
+	
+	
