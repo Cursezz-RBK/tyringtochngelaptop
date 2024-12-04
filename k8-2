@@ -1,0 +1,57 @@
+
+
+KUBERNETES :
+
+
+1]	Docker are ephemeral in nature.
+	Kubernetes is an opensource system for automating deployment, scaling, and management of containerized applications.
+
+2]	Kubernetes solves Docker's issues :
+
+	a] One host machine (When one container consumes more resources, it affects other containers)
+	--> In production, k8 is installed in master-cluster architecture. Hence, when meet with resource issues, the application is moved into different pods.
+	
+	b] Auto-Healing
+	--> Whenever an container goes down a new pod/container is rolled out/created.
+	
+	c] Auto-Scaling & Load-Balancing
+	--> We can confiure in manifest file (yaml file), that new container can be started, when 80% threshold is reached.
+	
+	d] Docker doesn't support enterprise level supports (Firewall,Auto-Healing,Auto-Scaling,API-Gateways,etc,...)
+	--> Active community to support k8 (CNCF)
+
+3] Docker Container's have container runtime component called Docker shim.
+	
+4] Architecture :
+
+	a] Request (1)
+	
+	b] Master Node / Controller plan (2) :
+	
+	1] API Server - Which exposes the k8 to external world and determines which application to which node (based on the requests)
+	2] Shedular - Based on info from API, It shedules the pods in nodes
+	3] etcd - It is where Key-Value information of Cluster-Node was stored
+	4] Controller manager - Which manages all the controller (Replicaset controller - Used in Auto-Scaling)
+	5] Cloud controller manager - Only when using Cloud, inorder to interact with cloud provider's services
+	
+	
+	c] Worker Node / Data plan (3) :
+	
+	1] Kube-proxy - Which deals with networking related activities (assigning ip address to the pods, etc)
+	2] Kubelet - Responsible foe creating pods, It also reports if any issues in the pods
+	3] Container runtime - Unlike docker's container runtime (Docker shim), Here we can use Docker shim, Containerd, etc,...
+	
+5] Having Multi containers in single pod have the following advantage:
+
+	a] Shared network
+	b] Shared Storage
+	
+6]	Docker -> run container -> using runtime commands (with -p, -v, etc,...)
+	K8 -> run pods -> usong .yaml files (In which we give container runtime command specifications)
+	
+7]	
+	
+	
+
+	
+	
