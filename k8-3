@@ -1,0 +1,350 @@
+
+KUBERNETES :::
+
+	1]	Kubernetes Architecture! 
+			
+			Kubernetes MAster 
+			
+				Kubernetes WorkNodes1
+				Kubernetes WorkNodes2 
+				Kubernetes WorkNodes3
+				
+		Master Node :
+		
+			API Server 
+			Scheduler
+			ETCD 
+			Controller Manager 
+			
+		Nodes :
+		
+			Kubelet
+			Kube Proxy 
+			CRI - ContainerD 
+			
+			
+	2]	Terminologies / Concepts :::
+		
+			Pods
+			Pod Networking 
+			Kubectl				# Command Line Utility
+			Clusters 
+			Controller Objects
+			Services 
+			Volumes 
+			
+	3]	Install & Setup Kubernetes!
+		
+		
+			Using Kubeadm :
+			
+		1. Launch the VMs -- 3VMs ==> 1 + 2
+		2. Enable Inbound Rules - Allow All Traffic
+		3. Setup the Node Names 
+		4. Install Docker 
+		5. Install and Setup CRI - ContainerD
+		6. Install Kubeadm,kubectl,kubeproxy
+		7. Master Node :
+			kubeadm Init 
+		8. Worknodes 
+			kubeadm join 
+		
+	4] 	Pod                        											(ppt frm 18:00)
+	
+		- What is pod ?
+		- Pod deployment
+		- Multi-ContainerD
+		- Pod networking
+			- Infra-Pod communication
+			- Inter-Pod communication
+		- Pod lifecycle
+		- kubectl
+		
+	5] 	Working with POD Object :
+	
+		- Create Manifest File! written using yaml / json
+		- manifest file in yaml/json extension
+		- All manifest file have 4 important keys;
+			- apiVersion
+			- kind
+			- metadata
+			- spec
+		
+		- (eg) : nginx-pod.yaml
+
+			apiVersion: v1					-> Based on kind type, it differs
+			kind: Pod               		-> The type of object we use
+			metadata:						-> Pod values
+			  name: nginx-pod				-> Pod name
+			  labels:						-> Tag (alternative name fr pods)
+				app: nginx
+				tier: dev
+			spec:							-> Container values
+			  containers:
+			  - name: nginx-container
+				image: nginx
+
+				ports:
+				- containerPort: 80
+		
+		- Commands :
+		
+			-> kubectl create -f nginx-pod.yaml		-> Create pod based on yaml file
+			-> kubectl get pod							-> Pods status
+			-> kubectl get pod -o wide					-> Pods status with additional Namespace info
+			-> kubectl get pod nginx-pod -o yaml		-> Pods status with additional info saved in yaml file
+			-> kubectl describe pod nginx-pod			-> Pods status with additional info +++ used for debuging *****
+			-> kubectl exec -it nginx-pod -- /bin/sh	-> Pod in interactive mode
+			-> kubectl get ns							-> Namespace status
+			
+			-> Above info are gathered fro etcd (Master component)
+			-> Container runtime pulls Image from repository
+			
+			kubectl get svc
+			
+			-> kubernetes service gets created during installation itself (default service)
+			
+			-> kubectl exec -it nginx-pod -- /bin/sh	-> Accessing pods in interactive mode
+			
+				-> cat <<EOF > /usr/share/nginx/html/test.html
+					<!DOCTYPE html>
+					<html>
+					<head>
+					<title>Testing..</title>
+					</head>
+					<body>
+					<h1 style="color:rgb(90,70,250);">Hello, Everyone...!</h1>
+					<h2>I am Bharath kumar :-) </h2>
+					</body>
+					</html>
+					EOF
+					exit
+				
+				-> Above html content is placed, inorder to access from web browser
+				
+			-> kubectl expose pod nginx-pod --type=NodePort --port=80 	-> Opens an port at node level (common for all nodes)
+			
+			- NOTE : In docker an port is opend with respect to an certain container, Where as in k8 common port is opened for all nodes, since in k8 we dont
+					know which node will be allocated an common node port service is opened at node level.
+				
+			-> kubectl get svc							-> Active Services status
+			
+			-> kubectl get svc
+			   kubectl get pod -o wide
+				- Above commands are used to get node (ip frm aws console of that node) & port details
+				
+			-> Open Web-browser and access webapge using (test.html is file name)
+				- http://<external-nodeip>:<nodeport>/test.html
+				
+			-> Delete pod & svc
+				- kubectl delete svc nginx-pod
+				- kubectl delete pod nginx-pod
+			
+	6]	Working with Deployment Controller Object ::
+	
+		- To Ensure Hgh availability ::
+			Creating Replicas of Pods 
+			Creating Replicas of Nodes 
+			
+		- Used to ensure high availability of pods by automtically creating replicasets.
+		- Deploy the application services 
+		- Upgrade 
+		- Rollback / Revert 
+		- Scale Up 
+		- Scale Down
+		
+		- (eg) : nginx-deploy.yaml
+			apiVersion: apps/v1					-> Changes when compared to pod
+			kind: Deployment					-> Changes when compared to pod
+			metadata:							-> Tag/Different name
+			  name: nginx-deploy2
+			  labels:
+				app: nginx-app2
+			spec:
+			  replicas: 3
+			  template:
+				metadata:
+				  labels:
+					app: nginx-app2
+				spec:
+				  containers:
+				  - name: nginx-container
+					image: nginx:1.7.9
+					ports:
+					- containerPort: 80
+			  selector:							-> Workflow : kind(Deployment)->Selector(matchLabels)->template(labels)->replicas(...)->containers(...)
+				matchLabels:
+				  app: nginx-app2
+				  
+				  
+		- Create and Display Deployment
+
+			kubectl create -f nginx-deploy.yaml 
+			kubectl get deploy -l app=nginx-app2		
+				-l -> represents label
+			kubectl get rs -l app=nginx-app2         	-> get replica status
+			kubectl get po -l app=nginx-app2
+			kubectl describe deploy nginx-deploy2
+
+		- nginx-deploy2-59754ccf9-6gfgj 	--> the sequence : deploymentobject-replica-pod
+
+		- Testing: Rollback update 
+
+			kubectl set image deploy nginx-deploy nginx-container=nginx:1.91 --record
+			kubectl rollout status deployment/nginx-deploy
+			kubectl rollout history deployment/nginx-deploy
+			kubectl rollout undo deployment/nginx-deploy
+			kubectl rollout status deployment/nginx-deploy
+			kubectl describe deploy nginx-deploy | grep -i image
+
+		- Deployment strategy for version update : RollingUpdate Strategy
+		Update Version of "nginx:1.7.9"  to "nginx:1.9.1"
+
+			kubectl set image deploy nginx-deploy2 nginx-container=nginx:1.9.1		-> If the image is not available the status will be ImagePullBackOff
+			  or
+			kubectl edit deploy nginx-deploy2
+			kubectl rollout status deployment/nginx-deploy
+			kubectl get deploy
+
+		- Testing: Scale UP
+
+			kubectl scale deployment nginx-deploy --replicas=5
+			kubectl get deploy
+			kubectl get po -o wide
+
+		- Testing: Scale DOWN
+
+			kubectl scale deployment nginx-deploy --replicas=3
+			kubectl get deploy
+			kubectl get po -o wide
+		
+		- Cleanup
+
+			kubectl delete -f nginx-deploy.yaml
+			kubectl get deploy
+			kubectl get rs
+			kubectl get po 
+		
+	7]	Services ::
+	
+		- Basic 3 types of services :					(ppt 3:18:00)
+			1] Cluster IP Service 
+				- Default service, Whatever pods or deployment objects created will be of this service and its scope will be within the machine.
+				- Flow : Cu -> Nodeportservice -> Frontendpod -> ClusterIPservice -> Backendpod
+				- We cant use pods IP to communicate with eachother (we have a possibility of Pod going down), So we use Cluster IP services
+				
+		- NOTE : all service have it's own IP address and Port, In addition to it, NodePort Service creates an NodePort (30000-32000) 
+		         to connect to external world.
+
+		- Terminologies :
+			- TargetPort -> Container's port which we give in manifest file
+			- Port -> Also known as service port, Port internally assigned to all services
+			- NodePort -> Port created by NodePort Service inorder to connect outer world
+			
+			- NOTE : The TargetPort and ServicePort will always be same when created (80 in our examples)
+		
+			2] NodePort Service
+			
+			3] Load Balancer Server                    (3:28:00)				(this service is highl costly service)
+
+				Ingress Rules for routing the requests :: (This is for reducing the cost)
+				
+					www.gmail.com		- if configured with an Load Balancer 
+
+				path based routing!
+				
+					www.gmail.com/inbox 	==> path based routing! (extension are considered as path based and comes under 1 gmail.com under 1 load balanser)
+					www.gmail.com/sent 
+					www.gmail.com/trash
+					
+					www.google.com 
+						www.google.com/maps
+						www.google.com/translate 
+						
+				Host Based Routing 
+					
+					www.google.com
+					www.mail.google.com
+					www.translate.google.com 	
+		
+	8] Volumes :::
+	
+		Persistant Data ::
+		
+		Types of volumes & Terminologies :					(3:38:00)
+		
+			emptydir 		-> Default volume, created when pod is created.
+			hostpath		-> Used to map additional pod volume to its respective pod and host volume (to the node which has this pod)
+			persistant Volume    -> For huge datas
+			persistant Volume Claim, etc ...
+					
+			1. HostPath YAML file
+
+				apiVersion: v1
+				kind: Pod
+				metadata:
+				  name: nginx-hostpath
+				  namespace: QA 
+				spec:
+				  containers:
+					- name: nginx-container
+					  image: nginx
+					  volumeMounts:
+					  - mountPath: /test-mnt
+						name: test-vol
+				  volumes:
+				  - name: test-vol
+					hostPath:
+					  path: /test-vol
+
+			2. Create and Display HostPath
+
+				kubectl create -f nginx-hostpath.yaml
+				kubectl get po
+				kubectl exec nginx-hostpath df /test-mnt
+
+			
+			3. Test: Creating "test" file underlying host dir & accessing from from pod
+
+				From HOST:
+				~~~~~~~~~~
+				cd /test-vol
+				echo "From Host" > from-host.txt
+				cat from-host.txt
+
+				From POD:
+				~~~~~~~~
+				kubectl exec nginx-hostpath cat /test-mnt/from-host.txt
+
+			4. Test: Creating "test" file inside the POD & accessing from underlying host dir
+
+				From POD:
+				~~~~~~~~~
+				kubectl exec nginx-hostpath -it -- /bin/sh
+				cd /test-mnt
+				echo "From Pod" > from-pod.txt
+				cat from-pod.txt
+
+				From Host:
+				~~~~~~~~~~
+				cd /test-vol
+				ls
+				cat from-pod.txt
+
+			5. Clean up
+
+				kubectl delete po nginx-hostpath
+				kubectl get po
+				ls /test-vol
+			
+			
+	9] 	Namespace ::						(3:52:00)
+	
+			- It is logical partition of Cluster (namespace is cluster level, not specific to nodes) 
+			- Provides isolated env kind of setup, where application can run without disturbance.
+			
+			- kubectl create namespace dev
+			
+			- In real time scenario DEV, UAT, QA will have their own namespaces not any seperate clusters/nodes.
+			
+			- namespace : can be given in mainfest files
