@@ -1,0 +1,275 @@
+
+COMMANDS :
+--------
+touch <script_name.sh>
+echo <content to print>
+	- echo $(date)				-> when we want to use linux command within a echo
+bash <script_name.sh>
+chmod <permission level - like 755> <script_name.sh>
+clear
+exit <0-255>						-> exit code 0 (success), other han 0 is error
+ls -l								-> list the resultt in the form of a single column
+read								-> reading a file
+>									-> writing into a file (It erases old content and writes new)
+>>									-> writing into a file (Adds new content at the end of the file)
+cksum <file name>					-> Inorder to validate the integrity(checking for any corruption) of the file
+sleep <time frame, defaultt is seconds>					-> sleeping
+
+
+- The script does not have execute permission, by giving it with chmod we can execute it as ./<script_name.sh>
+- We can't run it as <script_name.sh> but only as ./<script_name.sh>, because <script_name.sh> is not in he path variable.
+  hence, we give the location of the file. If we give script_name in path we can run with its name alone.
+
+- The Shebang
+	- #!/usr/bin/env bash		(or) 	#!/bin/bash			-> for bash scripting
+	- #!/usr/bin/env python									-> for python scripting
+	- #!/usr/bin/env node									-> for java scripting
+	
+- <VARIABLE_NAME>=<value>			-> Declaring
+  $<VARIABLE_NAME>					-> Calling
+		- Must begin with a letter or an underscore
+		- Any character except the first can be a number 
+		- variables are case sensitive
+		- Variables are usually all UPPER_CASE, but its not mandatory
+		- Space is not allowed inbetween variables and their values, we need to use '' or "" warping around the value we requires space
+			- (e.g) : NAME = "Bharath kumar"
+
+- Parameters :
+		- $0 		->	Path and Name of the executing script
+		- $1 to $9 	->	no of parameters passed
+		- ${10}		-> 	for parameters above 9 we use them within {}
+		- $?		-> 	returns exit code
+		- $@		-> stores all the passed parameter in tthe form of an array
+		- we can directly pass parameters to script, but the best practice is to send them via a variable (makes it easy while reading a script)
+		
+			- (e.g) : ./<script_name> Bharath						-> Passing parameters
+			
+						-> USER_NAME = $1
+							echo Hello $USER_NAME
+
+- Condittion statements :
+		
+		- Boolean conditions for comparing
+		
+			-eq 	-> if equal
+			-ne		-> if not equal
+			-gt		-> if greater than
+			-lt		-> if less than
+			-le		-> if less than or equal to
+			-ge		-> if greater than or equal to
+			-z		-> checks for empty string
+			
+		- if [<condition>]
+		  then
+		   <statement executing>
+		  fi
+		
+		- if [<condition>]
+		  then
+		   <statement executing>
+		  else
+		   <statement executing>
+		  fi
+		  
+		- if [<condition>]
+		  then
+		   <statement executing>
+		  elif [<condition>]
+		  then
+		   <statement executing>
+		  else
+		   <statement executing>
+		  fi
+		  
+		  
+		- COUNT=0
+		  
+		  while [ $COUNT -lt 10 ]
+		  do
+			echo "COUNT = $COUNT"
+			((COUNT++))
+		  done
+		  
+		  echo "while loop finished"
+		  exit 0
+		  
+		-> 	COUNT 0
+			COUNT 1
+			...
+			...
+			COUNT 9
+			while loop finished
+			
+			
+		- 
+		
+		NAMES=$@
+		
+		for NAME in $NAMES
+		do
+		  echo "Hello $NAME"
+		done
+		
+		echo "for loop terminated"
+		exit 0
+		
+		-> ./<script_name.sh> aaa bbb ccc
+		   Hello aaa
+		   Hello bbb
+		   Hello ccc
+		   for loop terminated
+		
+		- break and continue  statements used in loops
+		
+
+- Few ENV variables
+
+	- HOME 		-> users home directory
+	- PATH 		-> direcories which are searched for commands
+	- HOSTNAME 	-> hostname of the machine
+	- SHELL		-> shell that is being used
+	- USER		-> user of tthe session
+	- TERM 		-> ttype of command-line terminal being used
+	
+	
+- 	Function :
+
+	function declaration -
+	
+	function Hello() {
+	<statement>
+	}
+	
+	(or)
+	
+	Hello() {
+	<statements>
+	}
+		  
+	function call -
+	
+	Hello		-> just type function name
+	
+	- { NOTE : function call should come after function declaration }
+	- we can pass parameters in function call, as similar to as passing them in scripts
+	
+	
+
+- 
+
+read -p "What is ur name :" NAME
+echo "Your name is : $NAME"
+exit 0
+
+-> read command is used to get input , -p promts the message into screen, NAME is the variable where the given input is saved into.
+	
+		
+		
+
+
+
+MERGE CONFLICT RESOLUTION :
+-------------------------
+
+Overview :
+--------
+A merge conflict occurs when two branches have competing changes that Git cannot automatically reconcile.
+This document outlines the steps taken to identify, resolve, and finalize a merge conflict.
+
+Scenario Description :
+--------------------
+Branches Involved: feature/login and feature/dashboard
+Target Branch: develop
+Conflict File: File1.txt
+
+Steps to Resolve Merge Conflicts ;
+--------------------------------
+
+	a] 	Checkout the Target Branch :
+		Begin by switching to the branch you want to merge into (in this case, develop).
+		" git checkout develop "
+		
+	b]	Merge the Feature Branch :
+		Attempt to merge the feature branch (e.g., feature/login) into develop.
+		
+		" git merge feature/login "
+	
+	c]	Merge the Feature Branch :
+		Attempt to merge the feature branch (e.g., feature/dashboard) into develop.
+		
+		" git merge feature/dashboard "
+
+	d]	If a conflict occurs, Git will output a message indicating which files are in conflict.
+	
+		(e.g) :
+			$ git merge feature/dashboard
+			Auto-merging File1.txt
+			CONFLICT (add/add): Merge conflict in File1.txt
+			Automatic merge failed; fix conflicts and then commit the result.
+			
+	e]	Edit the Conflict:
+		Decide how to resolve the conflict. You can choose one version, combine both, or rewrite the section entirely
+		
+			vim File1.txt
+			-> 	<<<<<<< HEAD
+				File 2
+				=======
+				File 1
+				>>>>>>> feature/dashboard
+				
+	f]	Ensure that you delete the conflict markers (<<<<<<<, =======, >>>>>>>) after resolving the conflict.
+		Save the file after making the necessary edits.
+		
+	G]	Mark the Conflict as Resolved :
+		
+		git add File1.txt
+		git commit -m "Resolved merge conflict between feature/login and feature/dashboard"
+		
+		
+		
+TAGGING :
+-------
+
+1]	Merge the Develop Branch into Main :
+	Ensure that all features have been integrated into the develop branch and that it is stable. Then, merge it into the main branch.
+	
+	" git checkout main "
+	" git merge develop "
+
+2]	Tag the Main Branch with a Release Version :
+	Once the merge is complete and the main branch is stable, you can create a tag for the release. Use semantic versioning (e.g., v1.0.0)	for clarity.
+	a] Lightweight Tag :
+	" git tag v1.0.0 "
+	
+	(or)
+	
+	b] Annotated Tag :
+	" git tag -a v1.0.0 -m "Release version 1.0.0" "
+
+3] 	Push the Tags to the Remote Repository :
+	After tagging, you need to push the tags to the remote repository to make them available to others
+	
+	" git push origin --tags "
+	
+	
+BRANCHES :
+--------
+
+Main Branch: The stable codebase.
+	
+	- main
+
+Develop branch is created from the main branch to integrate ongoing work
+
+	- develop
+	
+Feature Branches: Isolated workspaces for feature development.
+
+	- feature/login - Feature branch used by developer A for developing
+	- feature/dashboard - Feature branch used by developer B for developing
+
+git branch					-> Check which branch we are in
+git branch develop			-> Create branches
+git checkout develop		-> Switch between branches
+git branch feature/login
+git branch feature/dashboard
