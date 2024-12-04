@@ -1,0 +1,260 @@
+
+DOCKER :
+
+1]	Physical server -> Using Hypervisor -> VM's (By using this less wastage when compared to servers) -> Guest OS, Application, Bins/Libs
+												(VM's are completely isolated frm underlying OS)
+
+	a] Physical server -> Host OS -> Docker -> Containers (OS within containers are just base OS (minimal OS) and they use underlysing OS) -> App, Libs/Bins
+	b] VM's / EC2 -> Docker -> Containers
+
+
+2]	Containers are light weight when compared to VM's, because they don't have full OS, they use resources from the base OS.
+	Containers have required dependencies (Libs/Bins) and Application itself.
+	(e.g) : Snapshot of VM -> 1GB/2GB, whereas copy of an containerised application -> 100mb/200mb
+	
+	
+3]	Docker is a platform for building, running and shipping applications
+
+	Issue's solved by Docker :
+	a] One or more files missing
+	b] Software version mismatch
+	c] Different configuration settings
+	
+	
+4]	Containers vs Virtual Machine ::
+
+1. Resource Utilization: Containers share the host operating system kernel, making them lighter and faster than VMs. VMs have a full-fledged OS and hypervisor, making them more resource-intensive.
+
+2. Portability: Containers are designed to be portable and can run on any system with a compatible host operating system. VMs are less portable as they need a compatible hypervisor to run.
+
+3. Security: VMs provide a higher level of security as each VM has its own operating system and can be isolated from the host and other VMs. Containers provide less isolation, as they share the host operating system.
+
+4. Management: Managing containers is typically easier than managing VMs, as containers are designed to be lightweight and fast-moving.
+
+	Containers - An isolated environment for running an application
+	Virtual machine - An abstraction of an machine (physical hardware)
+	
+	Issues in VM - 	Each VM needs full blown OS
+					Slow to start
+					Resource intensive (takes a piece of actual physical machine)
+
+	Pros of Containers 	- Allow running multiple apps in isolation
+						- Lightweight
+						- Use OS of Host
+						- Starts quicky
+						- Needs less hardware resource
+						
+						
+5]	Docker Architecture ::
+	
+	Client -----------> Server/Docker engine
+	         REST API
+			 
+	Windows has custom kernel (supports Linux/Windows) (Kernal of Host OS is what common stuff used by all containers) - So, windos and Linux based containers can run.
+	Linux - Only linux based containers can run
+	Mac OS - its kernal is different, so we need to run small vm of linux kernal than conatiners.
+	
+	
+6]	Dockerfile ::
+
+	Its name should always be Dockerfile,
+	
+	FROM node:alphine				(It is used to download the required image frm Docker hub, where node is dockerimage and alphine is linux's
+									distribution type/flavor )
+	COPY . /app						(Copying all the files in current directory into /app directory with the image's filesystem)
+	WORKDIR /app					(Setting the workdirectory)
+	CMD node app.js					(Command which we needed to run (from the WORKDIR))
+	RUN                             (linux commands(nstall,etxc))
+	ENTRYPOINT                      (executable or variables which we dont want to change)
+	CMD
+	--from=BUILD
+	AS BUILD
+	ENV
+	
+	
+7]	Docker Image contains ::
+	a] A cut-down OS
+	b] A runtime environment (eg Node)
+	c] Application files
+	d] Third-party libraries
+	e] Environment variables
+	
+
+8]	docker build -t hello-docker .
+
+	docker build 					-> for build an image using Dockerfile
+	-t <name>						-> tag
+	.								-> place where Dockerfile is present
+	
+	docker images					-> for viewing images
+	
+	docker run <image name>			-> starting container with that images, it also downloads the image if not available
+	
+	docker run -it <image name>
+	-it								-> Interactive mode (login as bash to run commands)
+		->root@12345:/#
+		root						-> root user
+		@12345						-> container id
+		:/							-> root directory
+		# or $						-> # for root user and $ for ordinary user
+		
+		-> echo hello				
+			-> hello
+		-> whoami					-> prints current user
+			-> root
+		-> echo $0					-> prints path where bash program is located
+			-> /bin/bash
+			
+	docker pull	<docker_image>					->
+	
+	docker ps -a 					->
+	
+	docker push <docker_image>		->
+	
+	docker login					->
+		username -
+		password -
+		
+	docker exec -it login /bin/bash ->
+
+	docker inspect <container name> ->
+		
+	docker network ls				->
+
+	docker network rm <network_name> ->
+	
+	docker network create <network_name> ->
+	
+	docker run -d --name <container_name> --network=<network_name> <image_name>  ->
+
+
+9]	Basic Linux ::
+
+	Major Linux distribution's : Ubuntu, Debian, Alpine, Fedora, CentOS
+	
+
+10] docker container rm -f $(docker container ls -aq)
+	docker image rm -f $(docker image ls -q)
+	
+	-f 	-> force flag -> adds running container/images aswell
+	-q 	-> gives only container/images id'security
+	-a 	-> will add stopped containers aswell
+	$()	-> for using multi commands
+	
+	
+11] JSON and YAML Formats :
+
+	a] data.json :
+	
+		{																			(Entire file is considered as single object, so start/end with {} )
+		
+			"name": "The Ultimate Docker course",									(Key : Value pair  with "" and , for next one)
+			"price": 149,															(sentence within "", boolean value and numeric value is written as it is)
+			"is_published": true,
+			"tags": ["software", "devops"],											(array values are within [] )
+			"author": {																(author is considered as an object, so within {} )
+				"first_name": "Mosh",
+				"last_name": "Hamedani"
+				}
+				
+		}
+
+	b] data.yml or data.yaml :
+	
+		---																			(yaml files starts with ---)
+		name: The Ultimate Docker course											(no "" or , is required in yaml files)
+		price: 149
+		is_published: true
+		tags: 																		(arrays represented with - )
+			- software
+			- devops
+		author:																		(new object contents are followed with indontations)
+			first_name: Mosh
+			last_name: Hamedani
+
+
+	json files are faster when compared to yaml file (because of parsing), since json files differentiates variables
+	
+	
+12]	Creating Docker Compose file :
+
+	docker-compose up
+	
+	
+13] Muti-stage docker builds :
+
+	1 final stage - with minimalistic image - n no of stages but 1 final stage
+	
+	distoless image - very minimalistic image
+	
+	Pros of Muti-stage docker images (distoless images) :
+		1] size reduced drastically
+		2] OS related vulnarubility resolved
+	
+	production issue faced with docker ?
+	previously we used ubuntu or final stage ubuntu images or runtime base images, which were exposed to vulnarubility issues. so we moved to distoless image
+	(eg): phyton based distoless image which has only phython, not even the basic packges like curl or wget, so we were able to avoid any OS related
+	vulnarubility.
+	
+	
+14] Networking in conatiners :
+
+a]	When an Container is created it would be in a subnet (etho0), the Host machine/EC2 would be in different subnet. Hence, we get network error when 
+	trying establish connection between both (ping). Inorder to resolve this, when an container is created an virtual ethernet (veth/Docker0) is created 
+	which forms an bridge between Host machine and the containers. This bridge is called "Bridge Network".
+
+b]	Popular networking :
+	1] Bridge networking (default)
+	2] Host networking
+	3] Overlay networking
+	
+c]	Host networking - Containers will be connected to same subnet as Host machine. Since, Container need to be in isolated environments this is not recommended.
+
+d] 	Overlay networking - Deals with K8's & Docker swarm's networking.
+	
+e]	docker inspect <container name> ->
+		
+	docker network ls				->
+
+	docker network rm <network_name> -> remove network
+	
+	docker network create <network_name> -> create netork (subnet)
+	
+	docker run -d --name <container_name> --network=<network_name> <image_name>  -> assign network to container
+	
+f] 	Whenever an container is created, they share the common bridge network (veth/Docker0) (not secure). If we need secure and private subnet for all containers
+	or for some specific containers we need to create and assign them using above commands.
+
+	
+15] Docker Volumes and Bind mounts :
+
+	docker volume inspect <volume_name>
+	
+	docker volume rm <volume_name>
+	
+	docker volume create <volume_name>
+	
+	docker run -it -v <volume_name>:/data <image_name> /bin/bash
+	
+	docker run -it -v <host_path>:<container_path> <image_name> /bin/bash
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
