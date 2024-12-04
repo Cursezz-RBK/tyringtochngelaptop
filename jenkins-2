@@ -1,0 +1,621 @@
+
+
+JENKINS :
+-------
+1] Jenkins pipeline :
+
+  a] Scripted pipeline -
+  - starts with -> " node {} "
+  - Groovy based DSL
+  
+  b] Declarative pipeline -
+  - starts with -> " pipeline {} "
+  - designed for configuring jenkins as a code
+  - It has following stages " agent -> stages -> steps "
+  
+	1] Agent :
+		+] agent any			-	Runs on first available system
+		+] agent { label '' }	-	Runs on system with that label
+		+] agent {				-	Runs the pipeline inside a docker container using the specific image
+				docker {
+					image ''
+					}
+				}
+		+] agent none			-	Alows us to select different agent for different stages
+		
+	2] Stages :
+		Stages represent different stages we use in our pipeline, and each stage will have Steps (Actions performed in Stages)
+		
+	3] Steps :
+		+] echo 								- 	Print message
+		+] git									-	Checkout code from git repo
+		+] sh									-	Run a Shell script or local shell command
+		+] archiveArtifacts						-	Let's us to archive the Artifacts
+		+] bat									-	Run shell commands on Windows systems
+		+] dir 									- 	This build step can be used to change directories for other build steps
+		
+		(e.g) : (WORKSPACE contains path)
+		
+			dir("${env.WORKSPACE}/environments/test"){
+			sh(‘’’
+				terraform init
+				terraform plan
+			‘’’)
+			}
+		
+		+] Check documentation for more steps 	- 	https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/
+		+] Pipeline snipet generator 			-	For creting steps based on required options
+		
+	(e.g) :
+	
+	pipeline {
+		agent any
+		stages {
+			stage('Requirements') {
+				steps {
+					echo 'Getting Requirements....'
+				}
+			}
+			stage('Build') {
+				steps {
+					echo 'Building....'
+				}
+			}
+			stage('Test') {
+				steps {
+					echo 'Testing..1'
+					echo 'Testing..2'
+					echo 'Testing..3'
+				}
+			}
+			stage('Report') {
+				steps {
+					echo 'Reporting....'
+				}
+			}
+		}
+	}  
+
+2] Pipeline Variables :
+   Allows us to use values dynamically in our pipeline
+   
+{{ NOTE - 1st run of the build might not show Build with parameters options, since jenkins need to adapet to it, later it changes }}
+	
+	a] Environment variables :
+		- Usually they are all in capital letters for identifications
+		- It can be used locally and globally by using environment {} in and out of stages {}
+		- Calling Environment variables within a step can be of different types, better to use a single type throughout the pipeline.
+			+] echo env.MAX_SIZE
+			+] echo "$env.MAX_SIZE"
+			+] echo "{$env.MAX_SIZE}"
+			+] echo MAX_SIZE
+			+] echo "$MAX_SIZE"
+			+] echo "{$MAX_SIZE}"
+			
+			(e.g) :
+			
+				pipeline {
+					agent any
+					environment {
+						MAX_SIZE = 10
+						MIN_SIZE = 1
+					}
+					stages {
+						stage('Default Scale') {
+							steps {
+								echo "MAX_SIZE = ${env.MAX_SIZE}"
+								echo "MIN_SIZE = ${env.MIN_SIZE}"
+							}
+						}
+						stage('Scale by 10x') {
+							environment {
+								MAX_SIZE = 100
+								MIN_SIZE = 10
+							}
+							steps {
+								echo "MAX_SIZE = ${env.MAX_SIZE}"
+								echo "MIN_SIZE = ${env.MIN_SIZE}"
+							}
+						}
+					}
+				}
+			
+	b] Current-Build variables :
+		- These variables value refer to the currently running builds.
+		- These variables can be called in a certain format and follow variable calling methods from environment variable section top.
+		
+			(e.g) : currentBuild.duration
+			        currentBuild.currentReult
+					
+	c] Parameter variables  :
+		- Assign values to variables when a job is triggered.
+		- Each Parameter variable must include a name, default value, and description
+		- Types of Parameter variables :
+			+] string
+			+] text
+			+] boolean
+			+] choice
+			+] password
+		
+		(e.g) :
+		
+			pipeline {
+				agent any
+				parameters {
+					string(name: 'FATHER',
+						   defaultValue: 'Vader',
+						   description: 'Enter Your father’s name')
+
+					text(name: 'PHRASE',
+							description: 'Enter your favorite phrase from a Charles Dickens Book',
+							defaultValue: 'It was the best of times, it was the worst of times,\nit was the age of wisdom, it was the age of foolishness,\nit was the epoch of belief, it was the epoch of incredulity,\nit was the season of light, it was the season of darkness,\nit was the spring of hope, it was the winter of despair.')
+
+					booleanParam(name: 'RUN_TESTS',
+							defaultValue: false,
+							description: 'Toggle this value to run tests.')
+
+					choice(name: 'AWS_REGION',
+							choices: ['us-east-1', 'us-east-2', 'us-west-1', 'us-west-2'],
+							description: 'Select the AWS region for deployment.')
+
+					password(name: 'DATABASE_PASSWORD',
+							defaultValue: 'DATABASE_PASSWORD',
+							description: 'Enter the database password')
+				}
+				stages {
+					stage('Example') {
+						steps {
+							echo "I am your father.  My name is ${params.FATHER}"
+							echo "My favorite phrase is ${params.PHRASE}"
+							echo "Will I rule the universe? ${params.RUN_TESTS}"
+							echo "I live in ${params.AWS_REGION}"
+							echo "Can I tell you a secret? ${params.DATABASE_PASSWORD}"
+						}
+					}
+				}
+			}
+			
+3] 	Conditional Expressions and Manual Approvals :
+	a] when {} :
+		+] conditions for when activations :
+			- branch			when { branch 'main' }
+			- environment		when { environment name: 'DEPLOY_TO', value: 'production' }
+			- expression		when { expression { fparams.ENVIRONMENT == 'PRODUCTION' }}
+	b] input step :
+		+] By using this we need to give manual approval during a build.
+		
+	(e.g) :
+	
+		pipeline {
+			agent any
+			parameters {
+				choice(name: 'ENVIRONMENT',
+					choices: ['DEVELOPMENT' , 'STAGING', 'PRODUCTION'],
+					description: 'Choose the environment for this deployment')
+			}
+
+			stages {
+				stage ('Build') {
+					steps {
+						echo "Building..."
+					}
+				}
+				stage ('Deploy to non-production environments') {
+					when {
+						// Only deploy if the environment is NOT production
+						expression { params.ENVIRONMENT != 'PRODUCTION' }
+					}
+					steps {
+						echo "Deploying to ${params.ENVIRONMENT}"
+					}
+				}
+				stage ('Deploy to production environment') {
+					when {
+						expression { params.ENVIRONMENT == 'PRODUCTION' }
+					}
+					steps {
+						input message: 'Confirm deployment to production...', ok: 'Deploy'
+						echo "Deploying to ${params.ENVIRONMENT}"
+					}
+				}
+			}
+		}
+		
+4]	Jenkinsfile :
+
+	When we enter Pipeline script from SCM option in Pipeline script writing place, we get the option to select Jenkinsfile from git repos.
+	For version control reasons, Automation reasons, its preferred to use Jenkinsfile.
+	
+	- With Jenkinsfile Pipeline can be stored along with other project files in git repo's.
+	- Track changes to pipeline configuration.
+	- Capture project configutation (configuration which we do in pipeline like tools, options, triggers, stages, etc,.) as a code.
+	- Supports GitOps approach by using the repo as single source of truth (all files from configuration to code is stored in git repo)
+	- You can use a Jenkins file to capture definitions for tools, options for your project, triggers to run a project, and much more.
+	  Essentially, for any configuration that you would make in the Jenkins graphical user interface, you can capture it as code in the Jenkins 
+	  and store it along with any other files in the repo.
+
+5]	Github Webhooks :
+
+	- Github Webhooks configuration to be made in both github and jenkins side for setting it up.
+	- GitHub webhooks in Jenkins allow for seamless integration between GitHub repositories and Jenkins pipelines, enabling automatic builds and
+	  deployments based on changes in the repository.
+	- This integration enhances the efficiency and speed of your CI/CD pipeline, providing immediate feedback on code changes and ensuring
+	  that your development team receives timely updates on the build status.
+
+6]	Defining paths of files :
+
+	(e.g) :
+  
+	pipeline {
+		agent any
+		parameters {
+			choice(name: 'NUMBER',
+				choices: [10,20,30,40,50,60,70,80,90],
+				description: 'Select the value for F(n) for the Fibonnai sequence.')
+		}
+		options {
+			buildDiscarder(logRotator(daysToKeepStr: '10', numToKeepStr: '10'))
+			timeout(time: 12, unit: 'HOURS')
+			timestamps()
+		}
+		triggers {
+			cron '@midnight'
+		}
+		stages {
+			stage('Make executable') {
+				steps {
+					sh('chmod +x ./scripts/fibonacci.sh')
+				}
+			}
+			stage('Relative path') {
+				steps {
+					sh("./scripts/fibonacci.sh ${env.NUMBER}")
+				}
+			}
+			stage('Full path') {
+				steps {
+					sh("${env.WORKSPACE}/scripts/fibonacci.sh ${env.NUMBER}")
+				}
+			}
+			stage('Change directory') {
+				steps {
+					dir("${env.WORKSPACE}/scripts"){
+						sh("./fibonacci.sh ${env.NUMBER}")
+					}
+				}
+			}
+		}
+	}
+	
+7]	Status Badges :
+	Status Badges are dynamically generated images that communicate whether a build is passing or failing.
+	Typically, status badges are placed in the README file for a GitHub repository. However, they can also be embedded in web pages or other online
+	documents. To enable status badges, your Jenkins server must have the Embeddable Build Status Plugin installed.
+	
+8]	Jenkins Agents :
+	
+	- Best approch is to run jobs/builds in Agents/Nodes so that we can free up resources (CPU, memory, hard drive spaces) in Jenkins controller.
+	  Where as Jenkins controller is used in sheduling jobs.
+	  
+	- Node types :
+		+] SSH agents - Severs which allows SSH connection and have JAVA installed can be considered as SSH nodes.
+		+] Docker agents - Jenkins can also use nodes and agents that run as containers, also known as Docker agents.
+		   With container agents, the Jenkins controller runs jobs in a newly created container on each build. 
+		   This has the benefit of the job running in a fresh and isolated environment every time.
+		+] By using Docker and Linux/SSH agents from top Agent types we can use them in Jenkinsfile.
+		
+	{{  +] Node / Agent - SSH / Docker agent configuration available  }}***
+			-> Manage Jenkins -> Cloud / Nodes,....
+			
+9]	Artifacts :
+
+	When a Jenkins job creates an object that needs to be saved, we refer to that object as an artifact.
+	Creating artifacts is a core function of the Jenkins server. The Copy Artifact Plugin allows pipelines to copy artifacts into a job
+	from other projects.
+	
+	- Artifacts types :
+		+] Compiled binaries
+		+] Docker images
+		+] ZIP files
+		+] Text file like a Report
+		+] Document
+		
+	(e.g) : Create an artifact in a pipeline :
+	
+		pipeline {
+			agent any
+			options {
+				copyArtifactPermission 'read-artifact'
+			}
+			stages {
+				stage('Create-Artifact') {
+					steps {
+						// the `set` command is a built-in shell command that
+						// prints the name and values of all variables visible
+						// to the shell's environment.
+						// https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
+						//
+						// The following uses the `sh` build step to run the
+						// `set` command on the local system.  Note that if this
+						// pipeline is run on a system that does not have a
+						// built-in `set` command, any builds of the pipeline
+						// will fail.  This may be the case on systems running
+						// Windows OS with Powershell.
+						sh "set > report.txt"
+					}
+				}
+			}
+			post {
+				always {
+					archiveArtifacts allowEmptyArchive: true,
+						artifacts: 'report.txt',
+						fingerprint: true,
+						followSymlinks: false,
+						onlyIfSuccessful: true
+				}
+			}
+		}
+		
+	(e.g) : Read an artifact from another job :
+	
+		pipeline {
+			agent any
+			stages {
+				stage('Read-Artifact') {
+					steps {
+						copyArtifacts projectName: 'create-artifact',
+							filter: 'report.txt',
+							fingerprintArtifacts: true,
+							selector: lastSuccessful()
+					}
+				}
+			}
+		}
+
+10]	Publish test results and code coverage reports :
+
+	Report formats :
+		- JUnit test report format :
+		JUnit reports are XML documents that describe the results of a test. The JUnit format was originally developed for Java programs
+		but many other languages have adopted this reporting format. This makes JUnit the standard for creating test reports.
+
+		- Code coverage formats :
+		Code coverage measures the effectiveness of a test by tracking the lines of code that are accessed during a test.
+
+	Two popular code coverage formats are JaCoCo and Cobertura.
+
+	Plugins for reading and publishing reports
+	Jenkins uses plugins to read and publish a variety of test and code coverage reports.
+		JUnit
+		Code Coverage API
+		
+11] Using test results to stop a build 
+
+	Failures in the test stage will stop any stages that follow. This prevents bugs from being deployed and prompts developers to resolve problems
+	before they reach a production environment.
+	
+	(e.g) :
+	
+		def test_ALWAYS_FAIL(self):
+			'''test_ALWAYS_FAIL: this test will always fail'''
+			assert False
+			
+	This will allow the project pipeline to run and encounter an error in the Test stage.
+	When Jenkins observes the failure in the Test stage, the Build and Deploy stages will be skipped.
+
+12] Security :
+
+Secure Jenkins with user accounts
+Jenkins provides some security features by default. For example, new installations are locked and require an initial admin password.
+
+Jenkins also allows you to create user accounts with usernames and passwords. This is a common approach for setting up boundaries for who can log in.
+
+Security Realms
+Briefly, a security realm controls how a person is authenticated to access a resource.
+
+Jenkins provides a built-in security realm and can be configured to work with external security realms.
+
+Authorization
+The default authorization allows all authenticated users to perform any operations.
+
+A best practice is to limit admin permission to a few, select users and give limited permissions to other users as needed.
+
+Matrix-based Security
+To configure user permissions, most Jenkins installations will use the Matrix authorization strategy plugin. This is one of the suggested plugins that gets installed in most Jenkins installations.
+
+Using a matrix strategy, permissions are assigned to each user individually.
+
+In addition, each user is given specific permission to perform certain actions.
+
+ATTENTION: Switching to Matrix-based Security
+When setting up Matrix-based security, please be sure to give your user administrative permissions. Also, if you created an admin user, assign admin permissions to the admin user as well.
+
+If you do not assign admin permissions to your account or an admin account, you run the risk of locking yourself out of your Jenkins server.
+
+See the resources for more information.
+
+Resources
+View the following documents for more information on security configurations in Jenkins.
+
+Managing Security
+
+Permissions
+
+Disable Access Control
+
+
+06_03 Use secrets and credentials
+Jenkins can store and manage sensitive values natively.
+
+Sensitive values are referred to as secrets or credentials. Both terms are used with the same meaning in this course.
+
+Types of credentials
+Jenkins supports several types of credentials including
+
+Usernames and passwords
+SSH Keys
+Files
+Text strings
+Installing plugins may expose other types of credentials.
+
+Accessing credentials in a pipeline
+Credentials can be accessed several ways in a pipeline but the two most common ways are using the credentials() function or the withCredentials(){} step.
+
+Accessing credentials with credentials()
+The credentials function is used to assign sensitive values to one or more environment variables. It takes the ID of a secret stored in Jenkins as its argument.
+
+With most credential types, credentials() will return one value.
+
+environment {
+    SECRET_VALUE = credentials(‘secret-value’)
+}
+
+env.SECRET_VALUE 
+However, when the credentials function is used with a username and password credential, three variables are returned.
+
+environment {
+    LOGIN = credentials(‘login’)
+}
+
+env.LOGIN
+env.LOGIN_USR
+env.LOGIN_PSW
+Accessing credentials with withCredentials(){}
+withCredentials is a build step that retrieves a secret value and assigns it to a variable. Any steps that are placed inside the withCredentials step will have access to the secret.
+
+steps {
+    withCredentials([string(credentialsId: 'apikey', variable: 'API_KEY')]) {
+        echo “${env.API_KEY}”
+    }
+}
+Example pipeline using credentials
+Use the following pipeline to experiment with accessing credentials.
+
+Before running the pipeline, create two credentials:
+
+user1 using the "Username and password" type
+apikey using the "Secret text" type
+Review the output after running the pipeline to note any references to the values the credentials contain.
+
+pipeline {
+    agent any
+    environment {
+      USER1 = credentials('user1')
+    }
+    stages {
+        stage('Test') {
+            steps {
+                withCredentials([string(credentialsId: 'apikey', variable: 'APIKEY')]) {
+                    echo env.APIKEY
+                    echo env.USER1
+                    echo env.USER1_USR
+                    echo env.USER1_PSW
+
+                    // This should cause a warning
+                    echo "${env.APIKEY}"
+                }
+            }
+        }
+    }
+}
+
+
+06_04 Challenge Configure users and permissions
+You manage a Jenkins server that’s being used by two development teams: One Team develops engineering applications and the other team develops finance applications.
+
+The Finance team is developing a new application that will process sensitive information.
+
+They've asked you to demonstrate how they can secure their pipeline jobs by limiting access to one specific user.
+
+Requirements
+Create users and configure security
+Create two users: one named engineering and another named finance
+Change the security configuration on your Jenkins server to use a project-based authorization strategy
+Assign the "Overall read" permission to both users
+Demonstrate limited access
+Create two folders: one named Engineering-Jobs and another named Finance-Jobs.
+Assign admin permissions to both users in the folder that corresponds to the user name.
+And finally, demonstrate how the engineering user can’t access or manage items inside the Finance-Jobs folder.
+This challenge should take 10 to 15 minutes to complete.
+
+06_05 Solution Configure users and permissions
+You manage a Jenkins server that’s being used by two development teams: One Team develops engineering applications and the other team develops finance applications.
+
+The Finance team is developing a new application that will process sensitive information.
+
+They've asked you to demonstrate how they can secure their pipeline jobs by limiting access to one specific user.
+
+Requirements
+Create users and configure security
+Create two users: one named engineering and another named finance
+Change the security configuration on your Jenkins server to use a project-based authorization strategy
+Assign the "Overall read" permission to both users
+Demonstrate limited access
+Create two folders: one named Engineering-Jobs and another named Finance-Jobs.
+Assign admin permissions to both users in the folder that corresponds to the user name.
+And finally, demonstrate how the engineering user can’t access or manage items inside the Finance-Jobs folder.
+This challenge should take 10 to 15 minutes to complete.
+
+Solution
+Create users and configure security
+
+Connect to Jenkins as an admin user.
+Select Manage Jenkins &arr; Manage Users &arr; Create User.
+Enter the details for the engineering user.
+Select Create User.
+Select Create User.
+Enter the details for the finance user.
+Select Create User.
+Select Manage Jenkins &arr; Configure Global Security.
+Select the radio button next to Project-based Matrix Authorization Strategy.
+Select Add user...
+Enter the name of your admin account.
+On the far right side of the matrix, select the option to check all boxes for the admin account.
+Select Add user....
+Enter engineering. Select OK.
+Select Add user....
+Enter finance. Select OK.
+Select the Overall Read permission for the engineering and finance users.
+Select Save.
+You may be prompted with the following message:
+Builds in Jenkins run as the virtual Jenkins SYSTEM user with full Jenkins permissions by default. This can be a problem if some users have restricted or no access to some jobs, but can configure others. If that is the case, it is recommended to install a plugin implementing build authentication, and to override this default.
+Review the following document for more information Access Control for Builds
+Select Dismiss to proceed.
+Create a folder with limited access for the Engineering team
+
+Select Dashboard &arr; New Item.
+Enter the name Engineering-Jobs &arr; Folder &arr; OK.
+Select the check-box next to Enable project-based security.
+Select Add user....
+Enter engineering. Select OK.
+Select Save.
+Select New Item.
+Enter the name Engineering-Jobs &arr; Folder &arr; OK.
+Select the check-box next to Enable project-based security.
+Select Add user....
+Enter engineering. Select OK.
+On the far right side of the matrix, select the option to check all boxes for the engineering account.
+Select Save.
+Create a folder with limited access for the Finance team
+
+Select Dashboard &arr; New Item.
+Enter the name Finance-Jobs &arr; Folder &arr; OK.
+Select the check-box next to Enable project-based security.
+Select Add user....
+Enter finance. Select OK.
+Select Save.
+Select New Item.
+Enter the name Finance-Jobs &arr; Folder &arr; OK.
+Select the check-box next to Enable project-based security.
+Select Add user....
+Enter finance. Select OK.
+On the far right side of the matrix, select the option to check all boxes for the finance account.
+Select Save.
+Demonstrate limited access
+
+Log out of the admin account.
+Log in as the engineering user.
+Confirm that the engineering user is not able to access the Finance-Jobs folder.
+Log out of the engineering account.
+Log in as the finance user.
+Confirm that the finance user is not able to access the Engineering-Jobs folder.
